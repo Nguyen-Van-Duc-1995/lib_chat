@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 // --- CONSTANTS & COLORS ---
 class AppColors {
-  static const Color background = Color(0xFF0B0E11);
+  static const Color background = Color(0xff0B0B25);
   static const Color cardBackground = Color(0xFF161A1E);
   static const Color cardBackgroundLight = Color(0xFF1E2329);
   static const Color chartBackground = Color(0xFF252930);

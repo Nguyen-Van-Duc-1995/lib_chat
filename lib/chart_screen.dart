@@ -954,9 +954,9 @@ class MFIPainter extends CustomPainter {
 }
 
 class HeaderSection extends StatelessWidget {
-  /* ... giữ nguyên ... */
   final TradingViewModel viewModel;
   const HeaderSection({super.key, required this.viewModel});
+
   @override
   Widget build(BuildContext context) {
     final ticker = viewModel.tickerData;
@@ -968,24 +968,51 @@ class HeaderSection extends StatelessWidget {
           child: CircularProgressIndicator(color: AppColors.accentYellow),
         ),
       );
+
     final bool isPositiveChange = ticker.priceChangePercent >= 0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: AppColors.cardBackground,
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: MediaQuery.of(context).padding.top + 8, // Safe area top
+        bottom: 12,
+      ),
+      color: AppColors.background,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header với nút back và thông tin ticker
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                ticker.symbol,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+              // Nút back cho iOS
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact(); // Haptic feedback cho iOS
+                  Navigator.of(context).pop();
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.arrow_back_ios,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      ticker.symbol,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              // Giá hiện tại
               Text(
                 FormatUtils.formatPrice(ticker.currentPrice),
                 style: TextStyle(
