@@ -8,13 +8,14 @@ import 'trading_screen.dart';
 
 /// App wrapper cho TradingScreen với Provider.
 class ChartApp extends StatelessWidget {
-  const ChartApp({super.key});
+  final String symbol;
+  const ChartApp({super.key, required this.symbol});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<TradingViewModel>(
-      create: (_) => TradingViewModel(),
-      child: const TradingScreen(),
+      create: (_) => TradingViewModel(symbol: symbol),
+      child: TradingScreen(symbol: symbol),
     );
   }
 }
