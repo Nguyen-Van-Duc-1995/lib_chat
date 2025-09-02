@@ -20,7 +20,7 @@ final double candleWidth = 3.5;
 final double spacing = 0.75;
 
 class TradingViewModel extends ChangeNotifier {
-  final BinanceService _binanceService = BinanceService(symbol: 'btcusdt');
+  final BinanceService _binanceService = BinanceService(symbol: 'AAA');
   String _currentInterval = '15m';
   final List<String> timeframes = ['1m', '5m', '15m', '30m', '1h', '4h', '1d'];
   final List<String> indicators = [

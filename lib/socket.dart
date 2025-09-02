@@ -162,7 +162,7 @@ class BinanceService {
   }
 
   // Fetch 24hr ticker data from REST API
-  Future<TickerData?> fetch24hrTicker() async {
+  Future<TickerData?> fetch24hrTickerBiance() async {
     try {
       final url =
           'https://api.binance.com/api/v3/ticker/24hr'
@@ -173,6 +173,25 @@ class BinanceService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         return TickerData.fromBinance24hrTicker(data);
+      } else {
+        throw Exception('Failed to fetch ticker: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching ticker: $e');
+      return null;
+    }
+  }
+
+  Future<TickerData?> fetch24hrTicker() async {
+    try {
+      final url =
+          'https://softsama.com/stock/api/onlycode?${symbol.toUpperCase()}';
+      print(url);
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        return TickerData.fromStockApi(data['data']);
       } else {
         throw Exception('Failed to fetch ticker: ${response.statusCode}');
       }
