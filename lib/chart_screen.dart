@@ -20,7 +20,13 @@ final double candleWidth = 3.5;
 final double spacing = 0.75;
 
 class TradingViewModel extends ChangeNotifier {
-  final BinanceService _binanceService = BinanceService(symbol: 'AAA');
+  final BinanceService _binanceService;
+  String symbol;
+
+  TradingViewModel({required this.symbol})
+    : _binanceService = BinanceService(symbol: symbol) {
+    _initialize();
+  }
   String _currentInterval = '15m';
   final List<String> timeframes = ['1m', '5m', '15m', '30m', '1h', '4h', '1d'];
   final List<String> indicators = [
@@ -91,10 +97,6 @@ class TradingViewModel extends ChangeNotifier {
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
 
-  TradingViewModel() {
-    _initialize();
-  }
-
   void setSelectedTab(int index) {
     _selectedTab = index;
     notifyListeners();
@@ -120,6 +122,14 @@ class TradingViewModel extends ChangeNotifier {
       _calculateIndicators();
     } catch (e) {
       print('Error fetching initial data: $e');
+    }
+  }
+
+  void updateSymbol(String newSymbol) {
+    if (newSymbol != symbol) {
+      symbol = newSymbol;
+      _initialize();
+      notifyListeners();
     }
   }
 

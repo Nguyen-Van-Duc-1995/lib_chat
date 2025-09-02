@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 import 'package:chart/model/kline_data.dart';
 import 'package:chart/model/ticker_data.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -125,7 +124,7 @@ class BinanceService {
       final response = await http.get(
         // Uri.parse("https://softsama.com/stock/api/candles"),
         Uri.parse(
-          "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=5&symbol=SSI&from=1751624521&to=1754130121",
+          "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=5&symbol=${symbol.toUpperCase()}&from=1754316658&to=1756822258",
         ),
       );
 

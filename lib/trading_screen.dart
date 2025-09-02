@@ -9,7 +9,8 @@ import 'chart_screen.dart';
 import 'utils/colors.dart';
 
 class TradingScreen extends StatefulWidget {
-  const TradingScreen({super.key});
+  final String symbol;
+  const TradingScreen({super.key, this.symbol = 'AAA'});
   @override
   State<TradingScreen> createState() => _TradingScreenState();
 }
@@ -51,6 +52,9 @@ class _TradingScreenState extends State<TradingScreen>
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<TradingViewModel>(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      viewModel.updateSymbol(widget.symbol);
+    });
     if (_tabController.index != viewModel.selectedTab) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _tabController.animateTo(viewModel.selectedTab);

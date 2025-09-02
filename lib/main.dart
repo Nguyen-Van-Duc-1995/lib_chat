@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: ChangeNotifierProvider<TradingViewModel>(
-        create: (context) => TradingViewModel(),
+        create: (context) => TradingViewModel(symbol: 'SSI'),
         child: const TradingScreen(),
       ),
       debugShowCheckedModeBanner: false,
