@@ -120,11 +120,12 @@ class BinanceService {
       //     '?symbol=${symbol.toUpperCase()}'
       //     '&interval=$interval'
       //     '&limit=$limit';
-
+      print(interval);
       final response = await http.get(
         // Uri.parse("https://softsama.com/stock/api/candles"),
         Uri.parse(
-          "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=5&symbol=${symbol.toUpperCase()}&from=1754316658&to=1756822258",
+          // "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=1D&symbol=${symbol.toUpperCase()}&from=1637193600&to=1757746800",
+          "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=1D&symbol=${symbol.toUpperCase()}&from=1637193600&to=1757746800",
         ),
       );
 

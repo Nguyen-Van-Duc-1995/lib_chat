@@ -28,7 +28,15 @@ class TradingViewModel extends ChangeNotifier {
     _initialize();
   }
   String _currentInterval = '15m';
-  final List<String> timeframes = ['1m', '5m', '15m', '30m', '1h', '4h', '1d'];
+  final List<String> timeframes = [
+    '5m',
+    '15m',
+    '30m',
+    '1h',
+    '1d',
+    '1 tuần',
+    '1 tháng',
+  ];
   final List<String> indicators = [
     'EMA20',
     'EMA50',
