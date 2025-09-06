@@ -120,12 +120,43 @@ class BinanceService {
       //     '?symbol=${symbol.toUpperCase()}'
       //     '&interval=$interval'
       //     '&limit=$limit';
-      print(interval);
+      switch (interval) {
+        case '1m':
+          interval = '1';
+          break;
+        case '5m':
+          interval = '5';
+          break;
+        case '15m':
+          interval = '15';
+          break;
+        case '30m':
+          interval = '30';
+          break;
+        case '1h':
+          interval = '60';
+          break;
+        case '2h':
+          interval = '120';
+          break;
+        case '1d':
+          interval = '1D';
+          break;
+        case '1 tuần':
+          interval = 'W';
+          break;
+        case '1 tháng':
+          interval = 'M';
+          break;
+        default:
+          interval = '1';
+      }
       final response = await http.get(
         // Uri.parse("https://softsama.com/stock/api/candles"),
         Uri.parse(
-          // "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=1D&symbol=${symbol.toUpperCase()}&from=1637193600&to=1757746800",
-          "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=1D&symbol=${symbol.toUpperCase()}&from=1637193600&to=1757746800",
+          (interval == '1D' || interval == 'W' || interval == 'M')
+              ? "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=$interval&symbol=${symbol.toUpperCase()}&from=1667606400&to=1757376000"
+              : "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=$interval&symbol=${symbol.toUpperCase()}&from=1754641393&to=1757146993",
         ),
       );
 
