@@ -9,9 +9,9 @@ import 'trading_screen.dart';
 
 class ChartApp extends StatelessWidget {
   final String symbol;
-  final Stream<KlineData> klineStream;
+  final Stream<dynamic>? klineStream;
 
-  const ChartApp({super.key, required this.symbol, required this.klineStream});
+  const ChartApp({super.key, required this.symbol, this.klineStream});
 
   @override
   Widget build(BuildContext context) {

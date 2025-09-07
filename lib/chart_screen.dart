@@ -10,7 +10,6 @@ import 'package:chart/model/trade_entry.dart';
 import 'dart:ui' as ui;
 import 'package:intl/intl.dart';
 import 'package:chart/socket.dart';
-import 'package:chart/trading_screen.dart';
 import 'package:chart/utils/format.dart';
 import 'package:chart/utils/indicator_calculator.dart';
 import 'package:chart/utils/manager_value.dart';
@@ -22,7 +21,7 @@ final double spacing = 0.75;
 class TradingViewModel extends ChangeNotifier {
   final BinanceService _binanceService;
   String symbol;
-  final Stream<KlineData>? klineStream;
+  final Stream<dynamic>? klineStream;
 
   TradingViewModel({required this.symbol, this.klineStream})
     : _binanceService = BinanceService(symbol: symbol) {
