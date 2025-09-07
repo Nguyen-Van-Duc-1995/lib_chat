@@ -22,12 +22,11 @@ mixin DrawPriceLabelsMixin {
       final textSpan = TextSpan(
         text: FormatUtils.formatPrice(
           price,
-          decimalPlaces: (maxPrice - minPrice) < 10
-              ? 2
-              : ((maxPrice - minPrice) < 1 ? 4 : 0),
+          decimalPlaces: 2, // luôn hiển thị 2 số sau dấu phẩy
         ),
         style: textStyle,
       );
+
       final textPainter = TextPainter(
         text: textSpan,
         textDirection: ui.TextDirection.ltr,
