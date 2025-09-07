@@ -20,8 +20,10 @@ class BinanceService {
   String _currentKlineInterval = '1m';
 
   BinanceService({this.symbol = 'btcusdt'}) {
-    _connectWebSocket();
+    // _connectWebSocket();
+    _connectWebSocketCK();
   }
+  void _connectWebSocketCK() {}
 
   void _connectWebSocket() {
     try {
@@ -34,15 +36,15 @@ class BinanceService {
         '$symbolLower@kline_$_currentKlineInterval', // Kline/candlestick
       ];
 
-      // final url =
-      //     'wss://stream.binance.com:9443/stream?streams=${streams.join("/")}';
+      final url =
+          'wss://stream.binance.com:9443/stream?streams=${streams.join("/")}';
 
-      // _channel = WebSocketChannel.connect(Uri.parse(url));
-      // _channelSubscription = _channel!.stream.listen(
-      //   _handleWebSocketMessage,
-      //   onError: _handleWebSocketError,
-      //   onDone: _handleWebSocketClosed,
-      // );
+      _channel = WebSocketChannel.connect(Uri.parse(url));
+      _channelSubscription = _channel!.stream.listen(
+        _handleWebSocketMessage,
+        onError: _handleWebSocketError,
+        onDone: _handleWebSocketClosed,
+      );
 
       // print('Connected to Binance WebSocket: $url');
     } catch (e) {
