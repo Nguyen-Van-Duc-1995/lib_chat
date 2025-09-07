@@ -22,8 +22,9 @@ final double spacing = 0.75;
 class TradingViewModel extends ChangeNotifier {
   final BinanceService _binanceService;
   String symbol;
+  final Stream<KlineData>? klineStream;
 
-  TradingViewModel({required this.symbol})
+  TradingViewModel({required this.symbol, this.klineStream})
     : _binanceService = BinanceService(symbol: symbol) {
     _initialize();
   }
