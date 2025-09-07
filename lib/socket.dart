@@ -151,12 +151,15 @@ class BinanceService {
         default:
           interval = '1';
       }
+      final now = DateTime.now();
+      // Đổi sang UTC rồi lấy timestamp (giây)Unix
+      final timestamp = now.toUtc().millisecondsSinceEpoch ~/ 1000;
       final response = await http.get(
         // Uri.parse("https://softsama.com/stock/api/candles"),
         Uri.parse(
           (interval == '1D' || interval == 'W' || interval == 'M')
-              ? "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=$interval&symbol=${symbol.toUpperCase()}&from=1667606400&to=1757376000"
-              : "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=$interval&symbol=${symbol.toUpperCase()}&from=1754641393&to=1757146993",
+              ? "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=$interval&symbol=${symbol.toUpperCase()}&from=1341705600&to=1757376000"
+              : "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=$interval&symbol=${symbol.toUpperCase()}&from=1754641393&to=$timestamp",
         ),
       );
 
