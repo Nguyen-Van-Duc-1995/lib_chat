@@ -1,7 +1,6 @@
 library;
 
 import 'package:chart/chart_screen.dart';
-import 'package:chart/model/kline_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
