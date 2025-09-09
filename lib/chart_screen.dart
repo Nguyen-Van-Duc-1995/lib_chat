@@ -27,7 +27,7 @@ class TradingViewModel extends ChangeNotifier {
     : _binanceService = BinanceService(symbol: symbol) {
     _initialize();
   }
-  String _currentInterval = '15m';
+  String _currentInterval = '1d';
   final List<String> timeframes = [
     '5m',
     '15m',
