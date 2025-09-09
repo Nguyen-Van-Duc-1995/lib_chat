@@ -156,15 +156,22 @@ class BinanceService {
       final now = DateTime.now();
       // Đổi sang UTC rồi lấy timestamp (giây)Unix
       final timestamp = now.toUtc().millisecondsSinceEpoch ~/ 1000;
-      final timestamp29DaysAgo =
-          now.toUtc().subtract(Duration(days: 29)).millisecondsSinceEpoch ~/
+      print(interval);
+      final days = switch (interval) {
+        '1D' => 450,
+        'W' => 1000,
+        'M' => 5000,
+        _ => 29,
+      };
+
+      final timeAgo =
+          now.toUtc().subtract(Duration(days: days)).millisecondsSinceEpoch ~/
           1000;
+
       final response = await http.get(
         // Uri.parse("https://softsama.com/stock/api/candles"),
         Uri.parse(
-          (interval == '1D' || interval == 'W' || interval == 'M')
-              ? "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=$interval&symbol=${symbol.toUpperCase()}&from=1341705600&to=1757376000"
-              : "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=$interval&symbol=${symbol.toUpperCase()}&from=$timestamp29DaysAgo&to=$timestamp",
+          "https://iboard-api.ssi.com.vn/statistics/charts/history?resolution=$interval&symbol=${symbol.toUpperCase()}&from=$timeAgo&to=$timestamp",
         ),
       );
 
