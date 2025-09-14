@@ -129,14 +129,16 @@ class TradingViewModel extends ChangeNotifier {
 
   Future<void> _fetchInitialData() async {
     try {
-      // Fetch historical klines and initial ticker data
-      _klines = await _binanceService.fetchKlines(_currentInterval, limit: 200);
       // _tickerData = await _binanceService.fetch24hrTicker();
       if (stockdata == null) {
         _tickerData = await _binanceService.fetch24hrTicker();
       } else {
         _tickerData = _binanceService.initSymbol();
       }
+
+      // Fetch historical klines and initial ticker data
+      _klines = await _binanceService.fetchKlines(_currentInterval, limit: 200);
+
       _calculateIndicators();
     } catch (e) {
       print('Error fetching initial data: $e');

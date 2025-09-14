@@ -256,7 +256,6 @@ class BinanceService {
   }
 
   initSymbol() {
-    print('initSymbol: $stockdata');
     return TickerData.fromStockApi(stockdata);
   }
 
