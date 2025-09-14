@@ -7,16 +7,17 @@ import 'package:provider/provider.dart';
 import 'trading_screen.dart';
 
 class ChartApp extends StatelessWidget {
-  final String symbol;
-  final Stream<dynamic>? klineStream;
+  final dynamic item;
+  final dynamic klineStream;
 
-  const ChartApp({super.key, required this.symbol, this.klineStream});
+  const ChartApp({super.key, required this.item, this.klineStream});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => TradingViewModel(symbol: symbol, klineStream: klineStream),
-      child: TradingScreen(symbol: symbol),
+      create: (_) =>
+          TradingViewModel(symbol: item['Symbol'], klineStream: klineStream),
+      child: TradingScreen(symbol: item['Symbol']),
     );
   }
 }
