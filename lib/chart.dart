@@ -15,8 +15,11 @@ class ChartApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) =>
-          TradingViewModel(symbol: item['Symbol'], klineStream: klineStream),
+      create: (_) => TradingViewModel(
+        symbol: item['Symbol'],
+        klineStream: klineStream,
+        stockdata: item,
+      ),
       child: TradingScreen(symbol: item['Symbol']),
     );
   }

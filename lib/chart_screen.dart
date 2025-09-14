@@ -132,9 +132,9 @@ class TradingViewModel extends ChangeNotifier {
       // Fetch historical klines and initial ticker data
       _klines = await _binanceService.fetchKlines(_currentInterval, limit: 200);
       // _tickerData = await _binanceService.fetch24hrTicker();
-      if (stockdata == null)
+      if (stockdata == null) {
         _tickerData = await _binanceService.fetch24hrTicker();
-      else {
+      } else {
         _tickerData = _binanceService.initSymbol();
       }
       _calculateIndicators();

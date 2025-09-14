@@ -255,9 +255,8 @@ class BinanceService {
     }
   }
 
-  initSymbol() async {
-    if (stockdata == null) return fetch24hrTicker;
-    TickerData.fromStockApi(stockdata);
+  initSymbol() {
+    return TickerData.fromStockApi(stockdata);
   }
 
   // Stream getters
