@@ -21,12 +21,14 @@ final double spacing = 0.75;
 class TradingViewModel extends ChangeNotifier {
   final BinanceService _binanceService;
   String symbol;
+  final dynamic stockdata;
   final dynamic klineStream;
 
-  TradingViewModel({required this.symbol, this.klineStream})
+  TradingViewModel({required this.symbol, this.klineStream, this.stockdata})
     : _binanceService = BinanceService(
         symbol: symbol,
         streamdata: klineStream,
+        stockdata: stockdata,
       ) {
     _initialize();
   }
@@ -129,7 +131,12 @@ class TradingViewModel extends ChangeNotifier {
     try {
       // Fetch historical klines and initial ticker data
       _klines = await _binanceService.fetchKlines(_currentInterval, limit: 200);
-      _tickerData = await _binanceService.fetch24hrTicker();
+      // _tickerData = await _binanceService.fetch24hrTicker();
+      if (stockdata == null)
+        _tickerData = await _binanceService.fetch24hrTicker();
+      else {
+        _tickerData = _binanceService.initSymbol();
+      }
       _calculateIndicators();
     } catch (e) {
       print('Error fetching initial data: $e');

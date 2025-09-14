@@ -9,6 +9,7 @@ class BinanceService {
   final String symbol;
   WebSocketChannel? _channel;
   dynamic streamdata;
+  dynamic stockdata;
   StreamSubscription? _channelSubscription;
 
   // Separate controllers for each stream type
@@ -20,7 +21,7 @@ class BinanceService {
   // Current kline interval for subscription
   String _currentKlineInterval = '1m';
 
-  BinanceService({this.symbol = 'btcusdt', this.streamdata}) {
+  BinanceService({this.symbol = 'btcusdt', this.streamdata, this.stockdata}) {
     // _connectWebSocket();
     _connectWebSocketCK();
   }
@@ -252,6 +253,11 @@ class BinanceService {
       print('Error fetching ticker: $e');
       return null;
     }
+  }
+
+  initSymbol() async {
+    if (stockdata == null) return fetch24hrTicker;
+    TickerData.fromStockApi(stockdata);
   }
 
   // Stream getters
