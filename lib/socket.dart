@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 class BinanceService {
   final String symbol;
   WebSocketChannel? _channel;
+  dynamic streamdata;
   StreamSubscription? _channelSubscription;
 
   // Separate controllers for each stream type
@@ -19,11 +20,17 @@ class BinanceService {
   // Current kline interval for subscription
   String _currentKlineInterval = '1m';
 
-  BinanceService({this.symbol = 'btcusdt'}) {
+  BinanceService({this.symbol = 'btcusdt', this.streamdata}) {
     // _connectWebSocket();
     _connectWebSocketCK();
   }
-  void _connectWebSocketCK() {}
+  void _connectWebSocketCK() {
+    if (streamdata != null) {
+      streamdata.setOnChange((message) {
+        print('Received message from external stream: $message');
+      });
+    }
+  }
 
   void _connectWebSocket() {
     try {

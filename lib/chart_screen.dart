@@ -21,10 +21,13 @@ final double spacing = 0.75;
 class TradingViewModel extends ChangeNotifier {
   final BinanceService _binanceService;
   String symbol;
-  final Stream<dynamic>? klineStream;
+  final dynamic klineStream;
 
   TradingViewModel({required this.symbol, this.klineStream})
-    : _binanceService = BinanceService(symbol: symbol) {
+    : _binanceService = BinanceService(
+        symbol: symbol,
+        streamdata: klineStream,
+      ) {
     _initialize();
   }
   String _currentInterval = '1d';
