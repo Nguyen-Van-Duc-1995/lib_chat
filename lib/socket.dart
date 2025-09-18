@@ -28,7 +28,10 @@ class BinanceService {
   void _connectWebSocketCK() {
     if (streamdata != null) {
       streamdata.setOnChange((message) {
-        _klineController.add(message);
+        if (message['Symbol'].toString().toLowerCase() ==
+            symbol.toLowerCase()) {
+          _klineController.add(message);
+        }
       });
     }
   }
