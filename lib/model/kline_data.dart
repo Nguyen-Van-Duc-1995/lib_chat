@@ -29,4 +29,35 @@ class KlineData {
       volume: double.parse(kline[5].toString()),
     );
   }
+
+  factory KlineData.fromJson(Map<String, dynamic> json) {
+    // Convert TradingDate + Time -> timestamp
+    final dateStr = json['TradingDate'] as String?; // "12/09/2025"
+    final timeStr = json['Time'] as String?; // "14:45:00"
+
+    DateTime dt;
+    if (dateStr != null && timeStr != null) {
+      final partsDate = dateStr.split('/'); // [12,09,2025]
+      final partsTime = timeStr.split(':'); // [14,45,00]
+      dt = DateTime(
+        int.parse(partsDate[2]),
+        int.parse(partsDate[1]),
+        int.parse(partsDate[0]),
+        int.parse(partsTime[0]),
+        int.parse(partsTime[1]),
+        int.parse(partsTime[2]),
+      );
+    } else {
+      dt = DateTime.now();
+    }
+
+    return KlineData(
+      time: (dt.millisecondsSinceEpoch / 1000).round(),
+      open: (json['RefPrice'] as num).toDouble(),
+      high: (json['Highest'] as num).toDouble(),
+      low: (json['Lowest'] as num).toDouble(),
+      close: (json['LastPrice'] as num).toDouble(),
+      volume: (json['TotalVol'] as num).toDouble(),
+    );
+  }
 }

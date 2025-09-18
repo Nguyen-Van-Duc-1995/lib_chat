@@ -28,7 +28,7 @@ class BinanceService {
   void _connectWebSocketCK() {
     if (streamdata != null) {
       streamdata.setOnChange((message) {
-        print('Received message from external stream: $message');
+        _klineController.add(message);
       });
     }
   }

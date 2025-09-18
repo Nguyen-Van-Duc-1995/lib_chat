@@ -247,19 +247,54 @@ class TradingViewModel extends ChangeNotifier {
 
     // Subscribe to kline updates
     _klineSubscription?.cancel();
+
+    // _klineSubscription = _binanceService
+    //     .subscribeToKline(_currentInterval)
+    //     .listen((data) {
+    //       try {
+    //         final klineData = data['k'];
+    //         final newKline = KlineData(
+    //           time: klineData['t'],
+    //           open: double.parse(klineData['o']),
+    //           high: double.parse(klineData['h']),
+    //           low: double.parse(klineData['l']),
+    //           close: double.parse(klineData['c']),
+    //           volume: double.parse(klineData['v']),
+    //         );
+
+    //         // Update or add kline data
+    //         if (_klines.isNotEmpty && _klines.last.time == newKline.time) {
+    //           // Update existing kline
+    //           _klines[_klines.length - 1] = newKline;
+    //         } else if (_klines.isEmpty || newKline.time > _klines.last.time) {
+    //           // Add new kline
+    //           _klines.add(newKline);
+    //           // Limit to last 500 klines
+    //           if (_klines.length > 500) {
+    //             _klines.removeAt(0);
+    //           }
+    //         }
+
+    //         notifyListeners();
+    //       } catch (e) {
+    //         print('Error processing kline data: $e');
+    //       }
+    //     }, onError: (error) => print('Kline stream error: $error'));
+
     _klineSubscription = _binanceService
         .subscribeToKline(_currentInterval)
         .listen((data) {
           try {
-            final klineData = data['k'];
-            final newKline = KlineData(
-              time: klineData['t'],
-              open: double.parse(klineData['o']),
-              high: double.parse(klineData['h']),
-              low: double.parse(klineData['l']),
-              close: double.parse(klineData['c']),
-              volume: double.parse(klineData['v']),
-            );
+            // final klineData = data['k'];
+            // final newKline = KlineData(
+            //   time: klineData['t'],
+            //   open: double.parse(klineData['o']),
+            //   high: double.parse(klineData['h']),
+            //   low: double.parse(klineData['l']),
+            //   close: double.parse(klineData['c']),
+            //   volume: double.parse(klineData['v']),
+            // );
+            final newKline = KlineData.fromJson(data);
 
             // Update or add kline data
             if (_klines.isNotEmpty && _klines.last.time == newKline.time) {
