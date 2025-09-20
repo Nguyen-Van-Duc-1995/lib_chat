@@ -297,17 +297,28 @@ class TradingViewModel extends ChangeNotifier {
             final newKline = KlineData.fromJson(data);
 
             // Update or add kline data
-            if (_klines.isNotEmpty && _klines.last.time == newKline.time) {
-              // Update existing kline
-              _klines[_klines.length - 1] = newKline;
-            } else if (_klines.isEmpty || newKline.time > _klines.last.time) {
+            if (_klines.isNotEmpty &&
+                newKline.time > _klines.last.time + 5000) {
               // Add new kline
               _klines.add(newKline);
               // Limit to last 500 klines
               if (_klines.length > 500) {
                 _klines.removeAt(0);
               }
+            } else {
+              _klines[_klines.length - 1] = newKline;
             }
+            // if (_klines.isNotEmpty && _klines.last.time == newKline.time) {
+            //   // Update existing kline
+            //   _klines[_klines.length - 1] = newKline;
+            // } else if (_klines.isEmpty || newKline.time > _klines.last.time) {
+            //   // Add new kline
+            //   _klines.add(newKline);
+            //   // Limit to last 500 klines
+            //   if (_klines.length > 500) {
+            //     _klines.removeAt(0);
+            //   }
+            // }
 
             notifyListeners();
           } catch (e) {
