@@ -23,13 +23,18 @@ class TradingViewModel extends ChangeNotifier {
   String symbol;
   final dynamic stockdata;
   final dynamic klineStream;
+  final dynamic exchange;
 
-  TradingViewModel({required this.symbol, this.klineStream, this.stockdata})
-    : _binanceService = BinanceService(
-        symbol: symbol,
-        streamdata: klineStream,
-        stockdata: stockdata,
-      ) {
+  TradingViewModel({
+    required this.symbol,
+    this.klineStream,
+    this.stockdata,
+    this.exchange,
+  }) : _binanceService = BinanceService(
+         symbol: symbol,
+         streamdata: klineStream,
+         stockdata: stockdata,
+       ) {
     _initialize();
   }
   String _currentInterval = '1d';

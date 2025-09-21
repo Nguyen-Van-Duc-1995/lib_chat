@@ -23,6 +23,10 @@ class HeaderSection extends StatelessWidget {
 
     final bool isPositiveChange = ticker.priceChangePercent >= 0;
 
+    // Get exchange data
+    final vnindexData = _getExchangeData('VNINDEX');
+    final vn30Data = _getExchangeData('VN30');
+
     return Container(
       padding: EdgeInsets.only(
         left: 16,
@@ -252,37 +256,46 @@ class HeaderSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // VNINDEX row
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _buildInfoItem(
                             'VNINDEX',
-                            '1490.01',
+                            (vnindexData?['IndexValue'] ?? 1140.0)
+                                .toStringAsFixed(2),
                             AppColors.textSecondary,
                           ),
                           const SizedBox(width: 8),
                           _buildInfoItem(
                             '',
-                            '+14.54',
-                            AppColors.priceUp,
+                            '${(vnindexData?['Change'] ?? 0.0) >= 0 ? '+' : ''}${(vnindexData?['Change'] ?? 0.0).toStringAsFixed(2)}',
+                            (vnindexData?['Change'] ?? 0.0) >= 0
+                                ? AppColors.priceUp
+                                : AppColors.priceDown,
                             showLabel: false,
                           ),
                         ],
                       ),
                       const SizedBox(height: 6),
+                      // VN30 row
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _buildInfoItem(
                             'VN30',
-                            '1543.01',
+                            (vn30Data?['IndexValue'] ?? 1540.0).toStringAsFixed(
+                              2,
+                            ),
                             AppColors.textSecondary,
                           ),
                           const SizedBox(width: 8),
                           _buildInfoItem(
                             '',
-                            '+14.01',
-                            AppColors.priceUp,
+                            '${(vn30Data?['Change'] ?? 0.0) >= 0 ? '+' : ''}${(vn30Data?['Change'] ?? 0.0).toStringAsFixed(2)}',
+                            (vn30Data?['Change'] ?? 0.0) >= 0
+                                ? AppColors.priceUp
+                                : AppColors.priceDown,
                             showLabel: false,
                           ),
                         ],
@@ -302,6 +315,21 @@ class HeaderSection extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // Helper method to get exchange data by IndexId
+  Map<String, dynamic>? _getExchangeData(String indexId) {
+    if (viewModel.exchange == null) return null;
+
+    try {
+      final data = (viewModel.exchange as List).firstWhere(
+        (item) => item['IndexId'] == indexId,
+        orElse: () => null,
+      );
+      return data;
+    } catch (e) {
+      return null;
+    }
   }
 
   Widget _buildInfoItem(
