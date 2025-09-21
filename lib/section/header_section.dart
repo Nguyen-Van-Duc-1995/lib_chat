@@ -11,7 +11,7 @@ class HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ticker = viewModel.tickerData;
-    if (ticker == null)
+    if (ticker == null) {
       return Container(
         padding: const EdgeInsets.all(16),
         color: AppColors.cardBackground,
@@ -19,6 +19,7 @@ class HeaderSection extends StatelessWidget {
           child: CircularProgressIndicator(color: AppColors.accentYellow),
         ),
       );
+    }
 
     final bool isPositiveChange = ticker.priceChangePercent >= 0;
 
