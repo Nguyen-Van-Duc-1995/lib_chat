@@ -15,6 +15,8 @@ class ChartApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('1111111111111111');
+    print(stockdata['exchange']);
     return ChangeNotifierProvider(
       create: (_) => TradingViewModel(
         symbol: stockdata['item']['Symbol'],
