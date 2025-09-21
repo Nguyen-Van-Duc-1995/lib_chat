@@ -1090,7 +1090,10 @@ class HeaderSection extends StatelessWidget {
               ),
               // Giá hiện tại
               Text(
-                FormatUtils.formatPrice(ticker.currentPrice),
+                FormatUtils.formatPrice(
+                  ticker.currentPrice / 1000,
+                  decimalPlaces: 2,
+                ),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -1106,7 +1109,7 @@ class HeaderSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${isPositiveChange ? '+' : ''}${FormatUtils.formatPrice(ticker.priceChange, decimalPlaces: 2)} (${isPositiveChange ? '+' : ''}${ticker.priceChangePercent.toStringAsFixed(2)}%)',
+                '${isPositiveChange ? '+' : ''}${FormatUtils.formatPrice(ticker.priceChange / 1000, decimalPlaces: 2)} (${isPositiveChange ? '+' : ''}${ticker.priceChangePercent.toStringAsFixed(2)}%)',
                 style: TextStyle(
                   fontSize: 13,
                   color: isPositiveChange
