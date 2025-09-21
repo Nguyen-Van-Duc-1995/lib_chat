@@ -1051,21 +1051,28 @@ class HeaderSection extends StatelessWidget {
       padding: EdgeInsets.only(
         left: 16,
         right: 16,
-        top: MediaQuery.of(context).padding.top + 8, // Safe area top
+        top: MediaQuery.of(context).padding.top + 8,
         bottom: 12,
       ),
-      color: AppColors.background,
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.gridLine.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header với nút back và thông tin ticker
+          // Row 1: Back button + Symbol + Star + Notification
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Nút back cho iOS
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact(); // Haptic feedback cho iOS
+                  HapticFeedback.lightImpact();
                   Navigator.of(context).pop();
                 },
                 child: Row(
@@ -1077,6 +1084,28 @@ class HeaderSection extends StatelessWidget {
                       color: AppColors.textPrimary,
                     ),
                     const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.textSecondary.withOpacity(0.5),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'HOSE',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Text(
                       ticker.symbol,
                       style: const TextStyle(
@@ -1085,63 +1114,219 @@ class HeaderSection extends StatelessWidget {
                         color: AppColors.textPrimary,
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    Text(
+                      FormatUtils.formatPrice(
+                        ticker.currentPrice / 1000,
+                        decimalPlaces: 2,
+                      ),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: isPositiveChange
+                            ? AppColors.priceUp
+                            : AppColors.priceDown,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color:
+                            (isPositiveChange
+                                    ? AppColors.priceUp
+                                    : AppColors.priceDown)
+                                .withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isPositiveChange
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            size: 14,
+                            color: isPositiveChange
+                                ? AppColors.priceUp
+                                : AppColors.priceDown,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${isPositiveChange ? '+' : ''}${FormatUtils.formatPrice(ticker.priceChange / 1000, decimalPlaces: 2)}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: isPositiveChange
+                                  ? AppColors.priceUp
+                                  : AppColors.priceDown,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${isPositiveChange ? '+' : ''}${ticker.priceChangePercent.toStringAsFixed(2)}%',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: isPositiveChange
+                                  ? AppColors.priceUp
+                                  : AppColors.priceDown,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-              // Giá hiện tại
-              Text(
-                FormatUtils.formatPrice(
-                  ticker.currentPrice / 1000,
-                  decimalPlaces: 2,
-                ),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isPositiveChange
-                      ? AppColors.priceUp
-                      : AppColors.priceDown,
-                ),
+              Row(
+                children: [
+                  Icon(Icons.star, color: AppColors.accentYellow, size: 24),
+                  const SizedBox(width: 12),
+                  Icon(
+                    Icons.notifications_outlined,
+                    color: AppColors.textPrimary,
+                    size: 24,
+                  ),
+                ],
               ),
             ],
           ),
           const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${isPositiveChange ? '+' : ''}${FormatUtils.formatPrice(ticker.priceChange / 1000, decimalPlaces: 2)} (${isPositiveChange ? '+' : ''}${ticker.priceChangePercent.toStringAsFixed(2)}%)',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isPositiveChange
-                      ? AppColors.priceUp
-                      : AppColors.priceDown,
-                ),
-              ),
-              Text(
-                'Vol: ${FormatUtils.formatNumber(ticker.volume24h, decimalPlaces: 2)} ${ticker.symbol.replaceAll("USDT", "").replaceAll("BUSD", "")}',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
+          // Subtitle (Ngân hàng TMCP Quân đội)
+          Padding(
+            padding: const EdgeInsets.only(left: 28),
+            child: Text(
+              'Ngân hàng TMCP Quân đội',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 12),
+          // Row 2: New layout - 2 columns
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '24h Cao: ${FormatUtils.formatPrice(ticker.high24h)}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
+              // Left Column: Price info
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppColors.textSecondary.withOpacity(0.3),
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          _buildInfoItem(
+                            'Cao:',
+                            '30.50',
+                            AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: 16),
+                          _buildInfoItem('Trần:', '35.05', AppColors.priceUp),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          _buildInfoItem(
+                            'Thấp:',
+                            '29.85',
+                            AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: 16),
+                          _buildInfoItem('Sàn:', '28.05', AppColors.priceDown),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          _buildInfoItem(
+                            'TB:',
+                            '29.15',
+                            AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: 16),
+                          _buildInfoItem(
+                            'TC:',
+                            '30.00',
+                            AppColors.accentYellow,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              Text(
-                '24h Thấp: ${FormatUtils.formatPrice(ticker.low24h)}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
+
+              const SizedBox(width: 8),
+
+              // Right Column: Change percentage and index info
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppColors.textSecondary.withOpacity(0.3),
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildInfoItem(
+                            'VNINDEX',
+                            '1490.01',
+                            AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildInfoItem(
+                            '',
+                            '+14.54',
+                            AppColors.priceUp,
+                            showLabel: false,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildInfoItem(
+                            'VN30',
+                            '1543.01',
+                            AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildInfoItem(
+                            '',
+                            '+14.01',
+                            AppColors.priceUp,
+                            showLabel: false,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      _buildInfoItem(
+                        'Ngành',
+                        'ACB, CTG, VCB, TCB',
+                        AppColors.textSecondary,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -1150,6 +1335,60 @@ class HeaderSection extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildInfoItem(
+    String label,
+    String value,
+    Color valueColor, {
+    bool showLabel = true,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showLabel)
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          ),
+        if (showLabel) const SizedBox(width: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 11,
+            color: valueColor,
+            fontWeight: showLabel ? FontWeight.w500 : FontWeight.normal,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+Widget _buildInfoItem(
+  String label,
+  String value,
+  Color valueColor, {
+  bool showLabel = true,
+}) {
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (showLabel)
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+        ),
+      if (showLabel) const SizedBox(width: 4),
+      Text(
+        value,
+        style: TextStyle(
+          fontSize: 11,
+          color: valueColor,
+          fontWeight: showLabel ? FontWeight.w500 : FontWeight.normal,
+        ),
+      ),
+    ],
+  );
 }
 
 class ActionButtons extends StatelessWidget {
