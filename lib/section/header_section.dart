@@ -322,12 +322,9 @@ class HeaderSection extends StatelessWidget {
     if (viewModel.exchange == null) return null;
 
     try {
-      final data = (viewModel.exchange as List).firstWhere(
-        (item) => item['IndexId'] == indexId,
-        orElse: () => null,
-      );
-      print('2222222222222222');
-      print(data);
+      final Map<String, dynamic> data = (viewModel.exchange as List)
+          .cast<Map<String, dynamic>>()
+          .firstWhere((item) => item['IndexId'] == indexId, orElse: () => {});
       return data;
     } catch (e) {
       return null;
