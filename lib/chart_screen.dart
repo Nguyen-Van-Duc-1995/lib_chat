@@ -330,6 +330,20 @@ class TradingViewModel extends ChangeNotifier {
               _klines[_klines.length - 1] = newKline;
             }
 
+            try {
+              _tickerData = TickerData(
+                symbol: data['Symbol'],
+                currentPrice: (data['LastPrice'] / 1000 as num).toDouble(),
+                priceChange: (data['Change'] / 1000 as num).toDouble(),
+                priceChangePercent: double.parse(data['RatioChange']),
+                volume24h: double.parse(data['TotalVol']),
+                high24h: double.parse(data['Highest']),
+                low24h: double.parse(data['Lowest']),
+              );
+            } catch (e) {
+              print('Error processing ticker data: $e');
+            }
+
             notifyListeners();
           } catch (e) {
             print('Error processing kline data: $e');
