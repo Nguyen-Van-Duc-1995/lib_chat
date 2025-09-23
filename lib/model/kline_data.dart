@@ -53,10 +53,10 @@ class KlineData {
 
     return KlineData(
       time: (dt.millisecondsSinceEpoch / 1000).round(),
-      open: (json['RefPrice'] as num).toDouble(),
-      high: (json['Highest'] as num).toDouble(),
-      low: (json['Lowest'] as num).toDouble(),
-      close: (json['LastPrice'] as num).toDouble(),
+      open: (json['RefPrice'] / 1000 as num).toDouble(),
+      high: (json['Highest'] / 1000 as num).toDouble(),
+      low: (json['Lowest'] / 1000 as num).toDouble(),
+      close: (json['LastPrice'] / 1000 as num).toDouble(),
       volume: (json['TotalVol'] as num).toDouble(),
     );
   }
