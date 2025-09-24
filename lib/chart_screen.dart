@@ -285,70 +285,67 @@ class TradingViewModel extends ChangeNotifier {
     //         print('Error processing kline data: $e');
     //       }
     //     }, onError: (error) => print('Kline stream error: $error'));
-    double lowest = 10000000;
-    double highest = 1;
-    double open = 0;
-    _klineSubscription = _binanceService
-        .subscribeToKline(_currentInterval)
-        .listen((data) {
-          try {
-            // final klineData = data['k'];
-            // final newKline = KlineData(
-            //   time: klineData['t'],
-            //   open: double.parse(klineData['o']),
-            //   high: double.parse(klineData['h']),
-            //   low: double.parse(klineData['l']),
-            //   close: double.parse(klineData['c']),
-            //   volume: double.parse(klineData['v']),
-            // );
-            final newKline = KlineData.fromJson({
-              "TradingDate": data['TradingDate'],
-              "Time": data['Time'],
-              "RefPrice": data['RefPrice'],
-              "Highest": highest,
-              "Lowest": lowest,
-              "LastPrice": data['LastPrice'],
-              "TotalVol": data['TotalVol'] - _klines.last.volume,
-            });
 
-            // Update or add kline data
-            if (_klines.isNotEmpty &&
-                newKline.time > _klines.last.time + 5000) {
-              // Add new kline
-              _klines.add(newKline);
-              open = 0;
-              // Limit to last 500 klines
-              if (_klines.length > 500) {
-                _klines.removeAt(0);
-              }
-            } else {
-              lowest = min(lowest, data['LastPrice']);
-              highest = max(highest, data['LastPrice']);
-              if (open == 0) {
-                open = data['LastPrice'];
-              }
-              _klines[_klines.length - 1] = newKline;
-            }
+    _klineSubscription = _binanceService.subscribeToKline(_currentInterval).listen((
+      data,
+    ) {
+      try {
+        final newKline = KlineData.fromJson({
+          "TradingDate": data['TradingDate'],
+          "Time": data['Time'],
+          "RefPrice": data['RefPrice'],
+          "Highest": data['Highest'],
+          "Lowest": data['Lowest'],
+          "LastPrice": data['LastPrice'],
+          "TotalVol": data['TotalVol'] - _klines.last.volume,
+        });
 
-            try {
-              _tickerData = TickerData(
-                symbol: data['Symbol'],
-                currentPrice: (data['LastPrice'] / 1000 as num).toDouble(),
-                priceChange: (data['Change'] / 1000 as num).toDouble(),
-                priceChangePercent: double.parse(data['RatioChange']),
-                volume24h: double.parse(data['TotalVol']),
-                high24h: double.parse(data['Highest']),
-                low24h: double.parse(data['Lowest']),
-              );
-            } catch (e) {
-              print('Error processing ticker data: $e');
-            }
-
-            notifyListeners();
-          } catch (e) {
-            print('Error processing kline data: $e');
+        // Update or add kline data
+        if (_klines.isNotEmpty && _klines.last.time == newKline.time) {
+          // Update existing kline
+          _klines[_klines.length - 1] = newKline;
+        } else if (_klines.isEmpty || newKline.time > _klines.last.time) {
+          // Add new kline
+          _klines.add(newKline);
+          // Limit to last 500 klines
+          if (_klines.length > 500) {
+            _klines.removeAt(0);
           }
-        }, onError: (error) => print('Kline stream error: $error'));
+        }
+
+        // Tính min/max trong 1 phút gần nhất
+        if (_klines.isNotEmpty) {
+          final latestTime = newKline.time;
+          final oneMinuteAgo =
+              latestTime - (60 * 1000); // 1 phút = 60 * 1000 ms
+
+          // Lọc các kline trong 1 phút gần nhất
+          final recentKlines = _klines
+              .where(
+                (kline) =>
+                    kline.time >= oneMinuteAgo && kline.time <= latestTime,
+              )
+              .toList();
+
+          if (recentKlines.isNotEmpty) {
+            final minPrice = recentKlines
+                .map((k) => k.low)
+                .reduce((a, b) => a < b ? a : b);
+            final maxPrice = recentKlines
+                .map((k) => k.high)
+                .reduce((a, b) => a > b ? a : b);
+
+            print(
+              'Min (1min): $minPrice, Max (1min): $maxPrice, Klines: ${recentKlines.length}',
+            );
+          }
+        }
+
+        notifyListeners();
+      } catch (e) {
+        print('Error processing kline data: $e');
+      }
+    }, onError: (error) => print('Kline stream error: $error'));
   }
 
   void _calculateIndicators() {
