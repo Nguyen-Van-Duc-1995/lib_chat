@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:chart/model/indicator_point.dart';
@@ -285,67 +286,53 @@ class TradingViewModel extends ChangeNotifier {
     //         print('Error processing kline data: $e');
     //       }
     //     }, onError: (error) => print('Kline stream error: $error'));
+    //     final newKline = KlineData.fromJson({
+    //   "TradingDate": data['TradingDate'],
+    //   "Time": data['Time'],
+    //   "RefPrice": data['RefPrice'],
+    //   "Highest": data['Highest'],
+    //   "Lowest": data['Lowest'],
+    //   "LastPrice": data['LastPrice'],
+    //   "TotalVol": data['TotalVol'] - _klines.last.volume,
+    // });
 
-    _klineSubscription = _binanceService.subscribeToKline(_currentInterval).listen((
-      data,
-    ) {
-      try {
-        final newKline = KlineData.fromJson({
-          "TradingDate": data['TradingDate'],
-          "Time": data['Time'],
-          "RefPrice": data['RefPrice'],
-          "Highest": data['Highest'],
-          "Lowest": data['Lowest'],
-          "LastPrice": data['LastPrice'],
-          "TotalVol": data['TotalVol'] - _klines.last.volume,
-        });
+    double hightest = 0, lowest = 1000000000;
+    _klineSubscription = _binanceService
+        .subscribeToKline(_currentInterval)
+        .listen((data) {
+          hightest = hightest == 0
+              ? double.parse(data['LastPrice'])
+              : math.max(hightest, double.parse(data['LastPrice']));
+          lowest = lowest == 1000000000
+              ? double.parse(data['LastPrice'])
+              : math.min(lowest, double.parse(data['LastPrice']));
+          try {
+            final newKline = KlineData.fromJson({
+              "TradingDate": data['TradingDate'],
+              "Time": data['Time'],
+              "RefPrice": data['RefPrice'],
+              "Highest": hightest,
+              "Lowest": lowest,
+              "LastPrice": data['LastPrice'],
+              "TotalVol": data['TotalVol'] - _klines.last.volume,
+            });
+            if (_klines.isEmpty || newKline.time > _klines.last.time + 1000) {
+              _klines.add(newKline);
+              hightest = 0;
+              lowest = 1000000000;
+              // Limit to last 500 klines
+              if (_klines.length > 500) {
+                _klines.removeAt(0);
+              }
+            } else {
+              _klines[_klines.length - 1] = newKline;
+            }
 
-        // Update or add kline data
-        if (_klines.isNotEmpty && _klines.last.time == newKline.time) {
-          // Update existing kline
-          _klines[_klines.length - 1] = newKline;
-        } else if (_klines.isEmpty || newKline.time > _klines.last.time) {
-          // Add new kline
-          _klines.add(newKline);
-          // Limit to last 500 klines
-          if (_klines.length > 500) {
-            _klines.removeAt(0);
+            notifyListeners();
+          } catch (e) {
+            print('Error processing kline data: $e');
           }
-        }
-
-        // Tính min/max trong 1 phút gần nhất
-        if (_klines.isNotEmpty) {
-          final latestTime = newKline.time;
-          final oneMinuteAgo =
-              latestTime - (60 * 1000); // 1 phút = 60 * 1000 ms
-
-          // Lọc các kline trong 1 phút gần nhất
-          final recentKlines = _klines
-              .where(
-                (kline) =>
-                    kline.time >= oneMinuteAgo && kline.time <= latestTime,
-              )
-              .toList();
-
-          if (recentKlines.isNotEmpty) {
-            final minPrice = recentKlines
-                .map((k) => k.low)
-                .reduce((a, b) => a < b ? a : b);
-            final maxPrice = recentKlines
-                .map((k) => k.high)
-                .reduce((a, b) => a > b ? a : b);
-
-            print(
-              'Min (1min): $minPrice, Max (1min): $maxPrice, Klines: ${recentKlines.length}',
-            );
-          }
-        }
-
-        notifyListeners();
-      } catch (e) {
-        print('Error processing kline data: $e');
-      }
-    }, onError: (error) => print('Kline stream error: $error'));
+        }, onError: (error) => print('Kline stream error: $error'));
   }
 
   void _calculateIndicators() {
