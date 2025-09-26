@@ -301,11 +301,11 @@ class TradingViewModel extends ChangeNotifier {
         .subscribeToKline(_currentInterval)
         .listen((data) {
           hightest = hightest == 0
-              ? double.parse(data['LastPrice'])
-              : math.max(hightest, double.parse(data['LastPrice']));
+              ? data['LastPrice'].toDouble()
+              : math.max(hightest, data['LastPrice'].toDouble());
           lowest = lowest == 1000000000
-              ? double.parse(data['LastPrice'])
-              : math.min(lowest, double.parse(data['LastPrice']));
+              ? data['LastPrice'].toDouble()
+              : math.min(lowest, data['LastPrice'].toDouble());
           try {
             final newKline = KlineData.fromJson({
               "TradingDate": data['TradingDate'],
@@ -316,7 +316,9 @@ class TradingViewModel extends ChangeNotifier {
               "LastPrice": data['LastPrice'],
               "TotalVol": data['TotalVol'] - _klines.last.volume,
             });
-            if (_klines.isEmpty || newKline.time > _klines.last.time + 1000) {
+            print(newKline.time);
+            print(_klines.last.time);
+            if (_klines.isEmpty || newKline.time > _klines.last.time + 5000) {
               _klines.add(newKline);
               hightest = 0;
               lowest = 1000000000;
@@ -325,7 +327,13 @@ class TradingViewModel extends ChangeNotifier {
                 _klines.removeAt(0);
               }
             } else {
-              _klines[_klines.length - 1] = newKline;
+              // _klines[_klines.length - 1].close = data['LastPrice'] / 1000;
+              // _klines[_klines.length - 1] = newKline;
+              if (_klines.isNotEmpty) {
+                _klines[_klines.length - 1] = _klines.last.copyWith(
+                  close: data['LastPrice'] / 1000,
+                );
+              }
             }
 
             notifyListeners();

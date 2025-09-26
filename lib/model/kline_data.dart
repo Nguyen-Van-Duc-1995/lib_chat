@@ -30,6 +30,25 @@ class KlineData {
     );
   }
 
+  // Thêm copyWith method
+  KlineData copyWith({
+    int? time,
+    double? open,
+    double? high,
+    double? low,
+    double? close,
+    double? volume,
+  }) {
+    return KlineData(
+      time: time ?? this.time,
+      open: open ?? this.open,
+      high: high ?? this.high,
+      low: low ?? this.low,
+      close: close ?? this.close,
+      volume: volume ?? this.volume,
+    );
+  }
+
   factory KlineData.fromJson(Map<String, dynamic> json) {
     // Convert TradingDate + Time -> timestamp
     final dateStr = json['TradingDate'] as String?; // "12/09/2025"
