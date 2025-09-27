@@ -3,6 +3,7 @@ import 'package:chart/utils/colors.dart';
 import 'package:chart/utils/format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 class HeaderSection extends StatelessWidget {
   final TradingViewModel viewModel;
@@ -10,6 +11,7 @@ class HeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final numberFormat = NumberFormat('#,###.##');
     final ticker = viewModel.tickerData;
     if (ticker == null) {
       return Container(
@@ -210,7 +212,7 @@ class HeaderSection extends StatelessWidget {
                               const SizedBox(height: 6),
                               _buildInfoItem(
                                 'KL:',
-                                formatValue(ticker.volume24h),
+                                numberFormat.format(ticker.volume24h),
                                 AppColors.textSecondary,
                               ),
                             ],
@@ -371,12 +373,5 @@ class HeaderSection extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String formatValue(num value) {
-    if (value >= 1e12) return '${(value / 1e12).toStringAsFixed(1)}K tỷ';
-    if (value >= 1e9) return '${(value / 1e9).toStringAsFixed(1)}B';
-    if (value >= 1e6) return '${(value / 1e6).toStringAsFixed(1)}M';
-    return value.toString();
   }
 }
