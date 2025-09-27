@@ -210,7 +210,7 @@ class HeaderSection extends StatelessWidget {
                               const SizedBox(height: 6),
                               _buildInfoItem(
                                 'KL:',
-                                ticker.totalVol.toString(),
+                                formatValue(ticker.volume24h),
                                 AppColors.textSecondary,
                               ),
                             ],
@@ -371,5 +371,12 @@ class HeaderSection extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String formatValue(num value) {
+    if (value >= 1e12) return '${(value / 1e12).toStringAsFixed(1)}K tỷ';
+    if (value >= 1e9) return '${(value / 1e9).toStringAsFixed(1)}B';
+    if (value >= 1e6) return '${(value / 1e6).toStringAsFixed(1)}M';
+    return value.toString();
   }
 }
