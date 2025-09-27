@@ -278,10 +278,11 @@ class HeaderSection extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _buildInfoItem(
-                            'VNINDEX',
+                            'VNINDEX:',
                             (vnindexData?['IndexValue'] ?? 1140.0)
                                 .toStringAsFixed(2),
                             AppColors.textSecondary,
+                            isWidthValue: true,
                           ),
                           const SizedBox(width: 8),
                           _buildInfoItem(
@@ -300,11 +301,12 @@ class HeaderSection extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _buildInfoItem(
-                            'VN30',
+                            'VN30:',
                             (vn30Data?['IndexValue'] ?? 1540.0).toStringAsFixed(
                               2,
                             ),
                             AppColors.textSecondary,
+                            isWidthValue: true,
                           ),
                           const SizedBox(width: 8),
                           _buildInfoItem(
@@ -353,15 +355,30 @@ class HeaderSection extends StatelessWidget {
     String value,
     Color valueColor, {
     bool showLabel = true,
+    bool isWidthValue = false,
   }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (showLabel)
-          Text(
-            label,
-            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-          ),
+          isWidthValue
+              ? SizedBox(
+                  width: 65,
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                )
+              : Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
         if (showLabel) const SizedBox(width: 4),
         Text(
           value,
