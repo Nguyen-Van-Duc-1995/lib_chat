@@ -192,13 +192,19 @@ class HeaderSection extends StatelessWidget {
                             children: [
                               _buildInfoItem(
                                 'Cao:',
-                                '30.50',
+                                FormatUtils.formatPrice(
+                                  ticker.high24h / 1000,
+                                  decimalPlaces: 2,
+                                ),
                                 AppColors.textSecondary,
                               ),
                               const SizedBox(height: 6),
                               _buildInfoItem(
                                 'Thấp:',
-                                '29.85',
+                                FormatUtils.formatPrice(
+                                  ticker.low24h / 1000,
+                                  decimalPlaces: 2,
+                                ),
                                 AppColors.textSecondary,
                               ),
                               const SizedBox(height: 6),
@@ -215,7 +221,10 @@ class HeaderSection extends StatelessWidget {
                             children: [
                               _buildInfoItem(
                                 'Trần:',
-                                '35.05',
+                                FormatUtils.formatPrice(
+                                  ticker.high24h / 1000,
+                                  decimalPlaces: 2,
+                                ),
                                 AppColors.priceUp,
                               ),
                               const SizedBox(height: 6),
