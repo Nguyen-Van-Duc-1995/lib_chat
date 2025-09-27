@@ -222,7 +222,7 @@ class HeaderSection extends StatelessWidget {
                               _buildInfoItem(
                                 'Trần:',
                                 FormatUtils.formatPrice(
-                                  ticker.high24h / 1000,
+                                  ticker.ceiling / 1000,
                                   decimalPlaces: 2,
                                 ),
                                 AppColors.priceUp,
@@ -230,7 +230,10 @@ class HeaderSection extends StatelessWidget {
                               const SizedBox(height: 6),
                               _buildInfoItem(
                                 'Sàn:',
-                                '28.05',
+                                FormatUtils.formatPrice(
+                                  ticker.floor / 1000,
+                                  decimalPlaces: 2,
+                                ),
                                 AppColors.priceDown,
                               ),
                               const SizedBox(height: 6),
