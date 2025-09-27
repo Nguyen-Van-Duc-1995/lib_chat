@@ -10,6 +10,7 @@ class TickerData {
   double floor;
   double avgPrice;
   double refPrice;
+  double totalVol;
 
   TickerData({
     required this.symbol,
@@ -23,6 +24,7 @@ class TickerData {
     this.floor = 0.0,
     this.avgPrice = 0.0,
     this.refPrice = 0.0,
+    this.totalVol = 0.0,
   });
 
   /// Mapping từ Binance (giữ nguyên)
@@ -52,6 +54,7 @@ class TickerData {
       floor: data['Floor']?.toDouble() ?? 0.0,
       avgPrice: data['AvgPrice']?.toDouble() ?? 0.0,
       refPrice: data['RefPrice']?.toDouble() ?? 0.0,
+      totalVol: data['TotalVol']?.toDouble() ?? 0.0,
     );
   }
 }

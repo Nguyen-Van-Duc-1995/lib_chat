@@ -209,11 +209,8 @@ class HeaderSection extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               _buildInfoItem(
-                                'TB:',
-                                FormatUtils.formatPrice(
-                                  ticker.avgPrice / 1000,
-                                  decimalPlaces: 2,
-                                ),
+                                'KL:',
+                                ticker.totalVol.toString(),
                                 AppColors.textSecondary,
                               ),
                             ],
