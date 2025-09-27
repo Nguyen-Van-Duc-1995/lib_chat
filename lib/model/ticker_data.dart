@@ -8,6 +8,8 @@ class TickerData {
   final double low24h;
   double ceiling;
   double floor;
+  double avgPrice;
+  double refPrice;
 
   TickerData({
     required this.symbol,
@@ -19,6 +21,8 @@ class TickerData {
     required this.low24h,
     this.ceiling = 0.0,
     this.floor = 0.0,
+    this.avgPrice = 0.0,
+    this.refPrice = 0.0,
   });
 
   /// Mapping từ Binance (giữ nguyên)
@@ -46,6 +50,8 @@ class TickerData {
       low24h: (data['Lowest'] ?? 0).toDouble(),
       ceiling: data['Ceiling']?.toDouble() ?? 0.0,
       floor: data['Floor']?.toDouble() ?? 0.0,
+      avgPrice: data['AvgPrice']?.toDouble() ?? 0.0,
+      refPrice: data['RefPrice']?.toDouble() ?? 0.0,
     );
   }
 }

@@ -210,7 +210,10 @@ class HeaderSection extends StatelessWidget {
                               const SizedBox(height: 6),
                               _buildInfoItem(
                                 'TB:',
-                                '29.15',
+                                FormatUtils.formatPrice(
+                                  ticker.avgPrice / 1000,
+                                  decimalPlaces: 2,
+                                ),
                                 AppColors.textSecondary,
                               ),
                             ],
@@ -239,7 +242,10 @@ class HeaderSection extends StatelessWidget {
                               const SizedBox(height: 6),
                               _buildInfoItem(
                                 'TC:',
-                                '30.00',
+                                FormatUtils.formatPrice(
+                                  ticker.refPrice / 1000,
+                                  decimalPlaces: 2,
+                                ),
                                 AppColors.accentYellow,
                               ),
                             ],
