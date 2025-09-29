@@ -341,7 +341,7 @@ class TradingViewModel extends ChangeNotifier {
                 symbol: data['Symbol'],
                 currentPrice: (data['LastPrice'] / 1000 as num).toDouble(),
                 priceChange: (data['Change'] / 1000 as num).toDouble(),
-                priceChangePercent: double.parse(data['RatioChange']),
+                priceChangePercent: (data['RatioChange'] as num).toDouble(),
                 volume24h: (data['TotalVol'] as num).toDouble(),
                 high24h: (data['Highest'] as num).toDouble(),
                 low24h: (data['Lowest'] as num).toDouble(),
