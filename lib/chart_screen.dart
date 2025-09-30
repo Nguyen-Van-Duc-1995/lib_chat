@@ -295,7 +295,6 @@ class TradingViewModel extends ChangeNotifier {
     //   "LastPrice": data['LastPrice'],
     //   "TotalVol": data['TotalVol'] - _klines.last.volume,
     // });
-
     double hightest = 0, lowest = 1000000000;
     _klineSubscription = _binanceService
         .subscribeToKline(_currentInterval)
@@ -310,7 +309,7 @@ class TradingViewModel extends ChangeNotifier {
             final newKline = KlineData.fromJson({
               "TradingDate": data['TradingDate'],
               "Time": data['Time'],
-              "RefPrice": data['RefPrice'],
+              "RefPrice": data['LastPrice'],
               "Highest": hightest,
               "Lowest": lowest,
               "LastPrice": data['LastPrice'],
@@ -318,7 +317,7 @@ class TradingViewModel extends ChangeNotifier {
             });
             print(newKline.time);
             print(_klines.last.time);
-            if (_klines.isEmpty || newKline.time > _klines.last.time + 5000) {
+            if (_klines.isEmpty || newKline.time > _klines.last.time + 200) {
               _klines.add(newKline);
               hightest = 0;
               lowest = 1000000000;
@@ -337,15 +336,10 @@ class TradingViewModel extends ChangeNotifier {
             }
 
             try {
-              _tickerData = TickerData(
-                symbol: data['Symbol'],
-                currentPrice: (data['LastPrice'] / 1000 as num).toDouble(),
-                priceChange: (data['Change'] / 1000 as num).toDouble(),
-                priceChangePercent: (data['RatioChange'] as num).toDouble(),
-                volume24h: (data['TotalVol'] as num).toDouble(),
-                high24h: (data['Highest'] as num).toDouble(),
-                low24h: (data['Lowest'] as num).toDouble(),
-              );
+              _tickerData = TickerData.fromStockApi(data);
+              if (_tickerData != null) {
+                print(_tickerData!.currentPrice.toString());
+              }
             } catch (e) {
               print('Error processing ticker data: $e');
             }

@@ -42,16 +42,16 @@ class TickerData {
   factory TickerData.fromStockApi(Map<String, dynamic> data) {
     return TickerData(
       symbol: data['Symbol'] ?? '',
-      currentPrice: (data['LastPrice'] ?? 0).toDouble(),
-      priceChange: (data['Change'] ?? 0).toDouble(),
+      currentPrice: ((data['LastPrice'] ?? 0)).toDouble(),
+      priceChange: ((data['Change'] ?? 0)).toDouble(),
       priceChangePercent: (data['RatioChange'] ?? 0).toDouble(),
       volume24h: (data['TotalVol'] ?? 0).toDouble(),
-      high24h: (data['Highest'] ?? 0).toDouble(),
-      low24h: (data['Lowest'] ?? 0).toDouble(),
-      ceiling: data['Ceiling']?.toDouble() ?? 0.0,
-      floor: data['Floor']?.toDouble() ?? 0.0,
-      avgPrice: data['AvgPrice']?.toDouble() ?? 0.0,
-      refPrice: data['RefPrice']?.toDouble() ?? 0.0,
+      high24h: ((data['Highest'] ?? 0)).toDouble(),
+      low24h: ((data['Lowest'] ?? 0)).toDouble(),
+      ceiling: ((data['Ceiling'] ?? 0)).toDouble(),
+      floor: ((data['Floor'] ?? 0)).toDouble(),
+      avgPrice: ((data['AvgPrice'] ?? 0)).toDouble(),
+      refPrice: ((data['RefPrice'] ?? 0)).toDouble(),
     );
   }
 }
