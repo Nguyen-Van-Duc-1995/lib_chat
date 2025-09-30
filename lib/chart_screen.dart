@@ -317,7 +317,14 @@ class TradingViewModel extends ChangeNotifier {
             });
             print(newKline.time);
             print(_klines.last.time);
-            if (_klines.isEmpty || newKline.time > _klines.last.time + 200) {
+            if (_klines.isEmpty ||
+                newKline.time >
+                    _klines.last.time +
+                        (_currentInterval == '1d'
+                            ? 99999
+                            : _currentInterval == '5m'
+                            ? 200
+                            : 500)) {
               _klines.add(newKline);
               hightest = 0;
               lowest = 1000000000;
