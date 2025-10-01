@@ -72,12 +72,12 @@ class _TradingScreenState extends State<TradingScreen>
         if (!isLandscape) HeaderSection(viewModel: viewModel),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          color: AppColors.cardBackground,
+          color: AppColors.background,
           child: TimeframeControls(viewModel: viewModel),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          color: AppColors.cardBackground,
+          color: AppColors.background,
           child: IndicatorShortcutControls(viewModel: viewModel),
         ),
         ChartSection(viewModel: viewModel),
@@ -86,7 +86,7 @@ class _TradingScreenState extends State<TradingScreen>
 
     Widget block2 = Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColors.background,
         border: const Border(
           top: BorderSide(color: AppColors.border, width: 1),
         ),
@@ -123,7 +123,7 @@ class _TradingScreenState extends State<TradingScreen>
           ),
           Container(
             padding: EdgeInsets.all(10),
-            color: AppColors.cardBackground,
+            color: AppColors.background,
             child: const ActionButtons(),
           ),
         ],
@@ -156,7 +156,7 @@ class _TradingScreenState extends State<TradingScreen>
                         horizontal: 8,
                         vertical: 8,
                       ),
-                      color: AppColors.cardBackground,
+                      color: AppColors.background,
                       child: TimeframeControls(viewModel: viewModel),
                     ),
                     Container(
@@ -164,7 +164,7 @@ class _TradingScreenState extends State<TradingScreen>
                         horizontal: 8,
                         vertical: 2,
                       ),
-                      color: AppColors.cardBackground,
+                      color: AppColors.background,
                       child: IndicatorShortcutControls(viewModel: viewModel),
                     ),
                     ChartSection(viewModel: viewModel),

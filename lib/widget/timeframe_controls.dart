@@ -10,7 +10,7 @@ class TimeframeControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 29,
+      height: 25,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: viewModel.timeframes.length,
@@ -23,7 +23,7 @@ class TimeframeControls extends StatelessWidget {
             style:
                 TextButton.styleFrom(
                   backgroundColor: isActive
-                      ? AppColors.accentYellow
+                      ? Color(0xff2EAA7A)
                       : AppColors.controlButton,
                   foregroundColor: isActive
                       ? AppColors.background

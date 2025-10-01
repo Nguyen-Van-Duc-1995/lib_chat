@@ -10,7 +10,7 @@ class IndicatorShortcutControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 29,
+      height: 25,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: viewModel.indicators.length,
@@ -22,7 +22,7 @@ class IndicatorShortcutControls extends StatelessWidget {
             onPressed: () => _onPressed(viewModel, label, context),
             style: TextButton.styleFrom(
               backgroundColor: isActive
-                  ? AppColors.accentYellow
+                  ? Color(0xff2EAA7A)
                   : AppColors.controlButton,
               foregroundColor: isActive
                   ? AppColors.background
