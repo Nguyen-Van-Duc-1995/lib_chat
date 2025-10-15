@@ -28,6 +28,10 @@ class HeaderSection extends StatelessWidget {
     // Get exchange data
     final vnindexData = _getExchangeData('VNINDEX');
     final vn30Data = _getExchangeData('VN30');
+    final Color textColor = FilterColorsFromTicker.getColor(
+      viewModel.tickerData!.currentPrice,
+      viewModel.tickerData!,
+    );
 
     return Container(
       padding: EdgeInsets.only(
@@ -105,9 +109,7 @@ class HeaderSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: isPositiveChange
-                            ? AppColors.priceUp
-                            : AppColors.priceDown,
+                        color: textColor,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -116,9 +118,7 @@ class HeaderSection extends StatelessWidget {
                           ? Icons.arrow_upward
                           : Icons.arrow_downward,
                       size: 14,
-                      color: isPositiveChange
-                          ? AppColors.priceUp
-                          : AppColors.priceDown,
+                      color: textColor,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -126,9 +126,7 @@ class HeaderSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isPositiveChange
-                            ? AppColors.priceUp
-                            : AppColors.priceDown,
+                        color: textColor,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -137,9 +135,7 @@ class HeaderSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isPositiveChange
-                            ? AppColors.priceUp
-                            : AppColors.priceDown,
+                        color: textColor,
                       ),
                     ),
                   ],
@@ -198,7 +194,10 @@ class HeaderSection extends StatelessWidget {
                                   ticker.high24h / 1000,
                                   decimalPlaces: 2,
                                 ),
-                                AppColors.textSecondary,
+                                FilterColorsFromTicker.getColor(
+                                  viewModel.tickerData!.high24h,
+                                  viewModel.tickerData!,
+                                ),
                               ),
                               const SizedBox(height: 6),
                               _buildInfoItem(
@@ -207,7 +206,10 @@ class HeaderSection extends StatelessWidget {
                                   ticker.low24h / 1000,
                                   decimalPlaces: 2,
                                 ),
-                                AppColors.textSecondary,
+                                FilterColorsFromTicker.getColor(
+                                  viewModel.tickerData!.low24h,
+                                  viewModel.tickerData!,
+                                ),
                               ),
                               const SizedBox(height: 6),
                               _buildInfoItem(
@@ -227,7 +229,10 @@ class HeaderSection extends StatelessWidget {
                                   ticker.ceiling / 1000,
                                   decimalPlaces: 2,
                                 ),
-                                AppColors.priceUp,
+                                FilterColorsFromTicker.getColor(
+                                  viewModel.tickerData!.ceiling,
+                                  viewModel.tickerData!,
+                                ),
                               ),
                               const SizedBox(height: 6),
                               _buildInfoItem(
@@ -236,7 +241,10 @@ class HeaderSection extends StatelessWidget {
                                   ticker.floor / 1000,
                                   decimalPlaces: 2,
                                 ),
-                                AppColors.priceDown,
+                                FilterColorsFromTicker.getColor(
+                                  viewModel.tickerData!.floor,
+                                  viewModel.tickerData!,
+                                ),
                               ),
                               const SizedBox(height: 6),
                               _buildInfoItem(

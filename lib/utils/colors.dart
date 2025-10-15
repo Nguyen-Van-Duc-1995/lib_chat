@@ -1,3 +1,4 @@
+import 'package:chart/model/ticker_data.dart';
 import 'package:flutter/material.dart';
 
 // --- CONSTANTS & COLORS ---
@@ -21,4 +22,75 @@ class AppColors {
   static const Color border = Color(0xFF2B3139);
   static const Color accentYellow = Color(0xFFFCD535);
   static const Color gridLine = Color(0xFF2B3139);
+
+  static const backgroundColor = Color(0xff0B0B25); // nền xanh đen
+  static const increaseColor = Color(0xff27AE60);
+  static const decreaseColor = Color(0xffC0392B);
+  static const yellowColor = Color(0xffF39C12);
+  static const ceilingColor = Color(0xffBB2AFF);
+  static const floorColor = Color(0xff2980B9);
+}
+
+abstract class FilterColors {
+  /// Màu sắc theo logic trần/sàn/tham chiếu/tăng/giảm
+  static Color getColor(dynamic price, Map<String, dynamic> code) {
+    final double p = _toDoubleSafe(price); // giá đang xét
+    final double ceilPrice = _toDoubleSafe(code['Ceiling']);
+    final double floorPrice = _toDoubleSafe(code['Floor']);
+    final double refPrice = _toDoubleSafe(code['RefPrice']);
+
+    if (p == ceilPrice) {
+      return AppColors.ceilingColor; // Màu trần
+    }
+    if (p == floorPrice) {
+      return AppColors.floorColor; // Màu sàn
+    }
+    if (p == refPrice) {
+      return AppColors.yellowColor; // Màu tham chiếu
+    }
+    if (p < refPrice) {
+      return AppColors.decreaseColor; // Màu giảm
+    }
+
+    return AppColors.increaseColor; // Màu tăng
+  }
+
+  static double _toDoubleSafe(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+}
+
+abstract class FilterColorsFromTicker {
+  /// Màu sắc theo logic trần/sàn/tham chiếu/tăng/giảm
+  static Color getColor(dynamic price, TickerData tickerData) {
+    final double p = _toDoubleSafe(price);
+    final double ceilPrice = tickerData.ceiling;
+    final double floorPrice = tickerData.floor;
+    final double refPrice = tickerData.refPrice;
+
+    if (p == ceilPrice) {
+      return AppColors.ceilingColor;
+    }
+    if (p == floorPrice) {
+      return AppColors.floorColor;
+    }
+    if (p == refPrice) {
+      return AppColors.yellowColor;
+    }
+    if (p < refPrice) {
+      return AppColors.decreaseColor;
+    }
+
+    return AppColors.increaseColor;
+  }
+
+  static double _toDoubleSafe(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
 }
