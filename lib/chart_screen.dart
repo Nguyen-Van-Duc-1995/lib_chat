@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:math' as math;
+import 'package:chart/model/market_index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:chart/model/indicator_point.dart';
@@ -9,9 +10,7 @@ import 'package:chart/model/order_book_entry.dart';
 import 'package:chart/model/ticker_data.dart';
 import 'package:chart/model/trade_entry.dart';
 import 'dart:ui' as ui;
-
 import 'package:chart/socket.dart';
-import 'package:chart/utils/format.dart';
 import 'package:chart/utils/indicator_calculator.dart';
 import 'package:chart/utils/manager_value.dart';
 import 'utils/colors.dart';
@@ -38,6 +37,7 @@ class TradingViewModel extends ChangeNotifier {
        ) {
     _initialize();
   }
+
   String _currentInterval = '1d';
   final List<String> timeframes = [
     '5m',
@@ -45,8 +45,8 @@ class TradingViewModel extends ChangeNotifier {
     '30m',
     '1h',
     '1d',
-    '1 tuần',
-    '1 tháng',
+    '1 tuần',
+    '1 tháng',
   ];
   final List<String> indicators = [
     'EMA20',
@@ -59,6 +59,12 @@ class TradingViewModel extends ChangeNotifier {
     'Ichimoku',
     'More',
   ];
+
+  // Market Indices - THÊM MỚI
+  MarketIndex? _vnIndex;
+  MarketIndex? _vn30Index;
+  MarketIndex? get vnIndex => _vnIndex;
+  MarketIndex? get vn30Index => _vn30Index;
 
   TickerData? _tickerData;
   TickerData? get tickerData => _tickerData;
@@ -135,16 +141,13 @@ class TradingViewModel extends ChangeNotifier {
 
   Future<void> _fetchInitialData() async {
     try {
-      // _tickerData = await _binanceService.fetch24hrTicker();
       if (stockdata == null) {
         _tickerData = await _binanceService.fetch24hrTicker();
       } else {
         _tickerData = _binanceService.initSymbol();
       }
 
-      // Fetch historical klines and initial ticker data
       _klines = await _binanceService.fetchKlines(_currentInterval, limit: 200);
-
       _calculateIndicators();
     } catch (e) {
       print('Error fetching initial data: $e');
@@ -159,17 +162,31 @@ class TradingViewModel extends ChangeNotifier {
     }
   }
 
+  // THÊM METHOD MỚI - Cập nhật chỉ số từ stream data
+  void updateMarketIndices(dynamic data) {
+    try {
+      if (data is Map<String, dynamic>) {
+        final index = MarketIndex.fromJson(data);
+        if (index.indexId == 'VNINDEX') {
+          _vnIndex = index;
+        } else if (index.indexId == 'VN30') {
+          _vn30Index = index;
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error updating market indices: $e');
+    }
+  }
+
   void _subscribeToStreams() {
-    // Subscribe to ticker updates
     _tickerSubscription?.cancel();
     _tickerSubscription = _binanceService.subscribeToTicker().listen((data) {
       try {
         _tickerData = TickerData(
           symbol: data['s'],
           currentPrice: double.parse(data['c']),
-          priceChange: double.parse(
-            data['P'],
-          ), // Note: 'P' is percentage change
+          priceChange: double.parse(data['P']),
           priceChangePercent: double.parse(data['P']),
           volume24h: double.parse(data['v']),
           high24h: double.parse(data['h']),
@@ -181,7 +198,6 @@ class TradingViewModel extends ChangeNotifier {
       }
     }, onError: (error) => print('Ticker stream error: $error'));
 
-    // Subscribe to order book updates
     _depthSubscription?.cancel();
     _depthSubscription = _binanceService.subscribeToDepth().listen((data) {
       try {
@@ -196,7 +212,7 @@ class TradingViewModel extends ChangeNotifier {
                 isBid: false,
               ),
             )
-            .where((entry) => entry.quantity > 0) // Filter out zero quantities
+            .where((entry) => entry.quantity > 0)
             .toList();
 
         _bids = bidUpdates
@@ -207,19 +223,16 @@ class TradingViewModel extends ChangeNotifier {
                 isBid: true,
               ),
             )
-            .where((entry) => entry.quantity > 0) // Filter out zero quantities
+            .where((entry) => entry.quantity > 0)
             .toList();
 
-        // Sort order book
         _asks.sort((a, b) => a.price.compareTo(b.price));
         _bids.sort((a, b) => b.price.compareTo(a.price));
 
-        // Calculate mid price
         if (_asks.isNotEmpty && _bids.isNotEmpty) {
           _orderBookMidPrice = (_asks.first.price + _bids.first.price) / 2;
         }
 
-        // Calculate cumulative totals for depth visualization
         double cumulativeAskTotal = _asks.fold(
           0.0,
           (sum, entry) => sum + entry.total,
@@ -237,7 +250,6 @@ class TradingViewModel extends ChangeNotifier {
       }
     }, onError: (error) => print('Depth stream error: $error'));
 
-    // Subscribe to trade updates
     _tradeSubscription?.cancel();
     _tradeSubscription = _binanceService.subscribeToTrades().listen((data) {
       try {
@@ -251,7 +263,6 @@ class TradingViewModel extends ChangeNotifier {
       }
     }, onError: (error) => print('Trade stream error: $error'));
 
-    // Subscribe to kline updates
     _klineSubscription?.cancel();
 
     // _klineSubscription = _binanceService
@@ -301,10 +312,10 @@ class TradingViewModel extends ChangeNotifier {
         .listen((data) {
           hightest = hightest == 0
               ? data['LastPrice'].toDouble()
-              : math.max(hightest, data['LastPrice'].toDouble());
+              : max(hightest, data['LastPrice'].toDouble());
           lowest = lowest == 1000000000
               ? data['LastPrice'].toDouble()
-              : math.min(lowest, data['LastPrice'].toDouble());
+              : min(lowest, data['LastPrice'].toDouble());
           try {
             final newKline = KlineData.fromJson({
               "TradingDate": data['TradingDate'],
@@ -315,8 +326,7 @@ class TradingViewModel extends ChangeNotifier {
               "LastPrice": data['LastPrice'],
               "TotalVol": data['TotalVol'] - _klines.last.volume,
             });
-            print(newKline.time);
-            print(_klines.last.time);
+
             if (_klines.isEmpty ||
                 newKline.time >
                     _klines.last.time +
@@ -328,13 +338,10 @@ class TradingViewModel extends ChangeNotifier {
               _klines.add(newKline);
               hightest = 0;
               lowest = 1000000000;
-              // Limit to last 500 klines
               if (_klines.length > 500) {
                 _klines.removeAt(0);
               }
             } else {
-              // _klines[_klines.length - 1].close = data['LastPrice'] / 1000;
-              // _klines[_klines.length - 1] = newKline;
               if (_klines.isNotEmpty) {
                 _klines[_klines.length - 1] = _klines.last.copyWith(
                   close: data['LastPrice'] / 1000,
@@ -344,9 +351,6 @@ class TradingViewModel extends ChangeNotifier {
 
             try {
               _tickerData = TickerData.fromStockApi(data);
-              if (_tickerData != null) {
-                print(_tickerData!.currentPrice.toString());
-              }
             } catch (e) {
               print('Error processing ticker data: $e');
             }
@@ -381,16 +385,13 @@ class TradingViewModel extends ChangeNotifier {
     HapticFeedback.lightImpact();
     _setLoading(true);
 
-    // Cancel existing subscriptions
     _klineSubscription?.cancel();
 
-    // Clear existing data
     _klines.clear();
     _rsiData.clear();
     _macdData = null;
     _mfiData.clear();
 
-    // Update service interval and refetch data
     _binanceService.updateKlineInterval(interval);
 
     _fetchInitialData().then((_) {
@@ -399,7 +400,6 @@ class TradingViewModel extends ChangeNotifier {
     });
   }
 
-  // Indicator toggle methods remain the same
   void toggleBB(bool? v) {
     if (v != null) {
       _showBB = v;
