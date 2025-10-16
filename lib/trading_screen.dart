@@ -1,5 +1,6 @@
 import 'package:chart/section/header_section.dart';
 import 'package:chart/section/market_info_section.dart';
+import 'package:chart/section/order_book_section.dart';
 import 'package:chart/section/trade_history_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
