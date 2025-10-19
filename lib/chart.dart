@@ -21,6 +21,7 @@ class ChartApp extends StatelessWidget {
         klineStream: stockdata['klineStream'],
         stockdata: stockdata['item'],
         exchange: stockdata['exchange'],
+        exchangeStream: stockdata['exchangeStream'],
       ),
       child: TradingScreen(symbol: stockdata['item']['Symbol']),
     );

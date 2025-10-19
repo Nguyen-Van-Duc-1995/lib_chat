@@ -11,7 +11,6 @@ import 'package:chart/model/trade_entry.dart';
 import 'dart:ui' as ui;
 
 import 'package:chart/socket.dart';
-import 'package:chart/utils/format.dart';
 import 'package:chart/utils/indicator_calculator.dart';
 import 'package:chart/utils/manager_value.dart';
 import 'utils/colors.dart';
@@ -25,17 +24,22 @@ class TradingViewModel extends ChangeNotifier {
   final dynamic stockdata;
   final dynamic klineStream;
   final dynamic exchange;
+  final dynamic exchangeStream;
+  dynamic _currentExchange;
 
   TradingViewModel({
     required this.symbol,
     this.klineStream,
     this.stockdata,
     this.exchange,
+    this.exchangeStream,
   }) : _binanceService = BinanceService(
          symbol: symbol,
          streamdata: klineStream,
          stockdata: stockdata,
-       ) {
+       ),
+       _currentExchange = exchange {
+    // Khởi tạo với giá trị ban đầu
     _initialize();
   }
   String _currentInterval = '1d';
@@ -62,6 +66,7 @@ class TradingViewModel extends ChangeNotifier {
 
   TickerData? _tickerData;
   TickerData? get tickerData => _tickerData;
+  dynamic get getExchange => _currentExchange ?? exchange;
 
   List<OrderBookEntry> _asks = [];
   List<OrderBookEntry> get asks => _asks;
@@ -131,6 +136,23 @@ class TradingViewModel extends ChangeNotifier {
     await _fetchInitialData();
     _subscribeToStreams();
     _setLoading(false);
+  }
+
+  void _subscribeToStreamsExchange() {
+    // Subscribe to kline stream (nếu có)
+    // ... code hiện tại của bạn ...
+
+    // Subscribe to exchange stream
+    exchangeStream?.listen(
+      (data) {
+        _currentExchange = data;
+        notifyListeners(); // Thông báo UI cập nhật
+        debugPrint('Exchange stream data received: $data');
+      },
+      onError: (error) {
+        debugPrint('Exchange stream error: $error');
+      },
+    );
   }
 
   Future<void> _fetchInitialData() async {
