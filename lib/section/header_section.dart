@@ -346,10 +346,10 @@ class HeaderSection extends StatelessWidget {
 
   // Helper method to get exchange data by IndexId
   Map<String, dynamic>? _getExchangeData(String indexId) {
-    if (viewModel.exchange == null) return null;
+    if (viewModel.getExchange == null) return null;
 
     try {
-      final Map<String, dynamic> data = (viewModel.exchange as List)
+      final Map<String, dynamic> data = (viewModel.getExchange as List)
           .cast<Map<String, dynamic>>()
           .firstWhere((item) => item['IndexId'] == indexId, orElse: () => {});
       return data;

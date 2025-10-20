@@ -136,6 +136,7 @@ class TradingViewModel extends ChangeNotifier {
     await _fetchInitialData();
     _subscribeToStreams();
     _setLoading(false);
+    _subscribeToStreamsExchange();
   }
 
   void _subscribeToStreamsExchange() {
