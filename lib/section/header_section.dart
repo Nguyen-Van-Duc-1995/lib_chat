@@ -2,7 +2,6 @@ import 'package:chart/providers/trading_view_model.dart';
 import 'package:chart/utils/colors.dart';
 import 'package:chart/utils/format.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 class HeaderSection extends StatelessWidget {
