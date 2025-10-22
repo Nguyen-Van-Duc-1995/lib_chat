@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:chart/chart_screen.dart';
+import 'package:chart/providers/trading_view_model.dart';
 import 'package:chart/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:chart/model/order_book_entry.dart';

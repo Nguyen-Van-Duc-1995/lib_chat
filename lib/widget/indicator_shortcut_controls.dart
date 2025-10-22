@@ -1,6 +1,5 @@
+import 'package:chart/providers/trading_view_model.dart';
 import 'package:flutter/material.dart';
-
-import '../chart_screen.dart';
 import '../utils/colors.dart';
 
 class IndicatorShortcutControls extends StatelessWidget {

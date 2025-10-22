@@ -1,6 +1,6 @@
 library;
 
-import 'package:chart/chart_screen.dart';
+import 'package:chart/providers/trading_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

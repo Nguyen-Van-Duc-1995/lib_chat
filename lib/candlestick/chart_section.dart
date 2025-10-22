@@ -1,6 +1,6 @@
+import 'package:chart/providers/trading_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:chart/candlestick/candlestick_chart.dart';
-import 'package:chart/chart_screen.dart' show TradingViewModel;
 import 'package:chart/utils/colors.dart';
 
 class ChartSection extends StatelessWidget {

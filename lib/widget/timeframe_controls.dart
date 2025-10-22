@@ -1,6 +1,5 @@
+import 'package:chart/providers/trading_view_model.dart';
 import 'package:flutter/material.dart';
-import 'package:chart/chart_screen.dart';
-
 import '../utils/colors.dart';
 
 class TimeframeControls extends StatelessWidget {
