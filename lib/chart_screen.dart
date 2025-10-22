@@ -25,7 +25,7 @@ class TradingViewModel extends ChangeNotifier {
   final dynamic klineStream;
   final dynamic exchange;
   final dynamic exchangeStream;
-  dynamic _currentExchange;
+  final dynamic _currentExchange;
 
   TradingViewModel({
     required this.symbol,
@@ -140,15 +140,16 @@ class TradingViewModel extends ChangeNotifier {
   }
 
   void _subscribeToStreamsExchange() {
-    // Subscribe to kline stream (nếu có)
-    // ... code hiện tại của bạn ...
-
-    // Subscribe to exchange stream
-    exchangeStream?.listen(
+    exchangeStream?.stream.listen(
       (data) {
-        _currentExchange = data;
-        notifyListeners(); // Thông báo UI cập nhật
-        debugPrint('Exchange stream data received: $data');
+        final indexId = data['IndexId'];
+        if (indexId == 'VNINDEX' || indexId == 'VN30') {
+          // Xóa item cũ nếu đã tồn tại
+          _currentExchange.removeWhere((item) => item['IndexId'] == indexId);
+          // Thêm item mới
+          _currentExchange.add(data);
+          notifyListeners();
+        }
       },
       onError: (error) {
         debugPrint('Exchange stream error: $error');
