@@ -56,90 +56,89 @@ class HeaderSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  Navigator.of(context).pop();
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.arrow_back_ios,
-                      size: 18,
-                      color: AppColors.textPrimary,
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: AppColors.textSecondary.withOpacity(0.5),
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'HOSE',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      ticker.symbol,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 3),
+                      child: Icon(
+                        Icons.arrow_back_ios,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      FormatUtils.formatPrice(
-                        ticker.currentPrice / 1000,
-                        decimalPlaces: 2,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: AppColors.textSecondary.withOpacity(0.5),
+                        width: 1,
                       ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'HOSE',
                       style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
+                        fontSize: 10,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      isPositiveChange
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
-                      size: 14,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    ticker.symbol,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    FormatUtils.formatPrice(
+                      ticker.currentPrice / 1000,
+                      decimalPlaces: 2,
+                    ),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
                       color: textColor,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${isPositiveChange ? '+' : ''}${FormatUtils.formatPrice(ticker.priceChange / 1000, decimalPlaces: 2)}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    isPositiveChange
+                        ? Icons.arrow_upward
+                        : Icons.arrow_downward,
+                    size: 14,
+                    color: textColor,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${isPositiveChange ? '+' : ''}${FormatUtils.formatPrice(ticker.priceChange / 1000, decimalPlaces: 2)}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${isPositiveChange ? '+' : ''}${ticker.priceChangePercent.toStringAsFixed(2)}%',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${isPositiveChange ? '+' : ''}${ticker.priceChangePercent.toStringAsFixed(2)}%',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               Row(
                 children: [
