@@ -10,6 +10,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -52,8 +53,24 @@ class MyApp extends StatelessWidget {
           surface: AppColors.cardBackground,
         ),
       ),
-      home: ChangeNotifierProvider<TradingViewModel>(
-        create: (context) => TradingViewModel(
+      home: const HomePage(), // Tách ra widget riêng
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint("========== HomePage build ==========");
+
+    return ChangeNotifierProvider<TradingViewModel>(
+      create: (context) {
+        debugPrint(">>> Creating TradingViewModel <<<");
+
+        return TradingViewModel(
           symbol: 'SSI',
           stockdata: null,
           klineStream: null,
@@ -90,10 +107,34 @@ class MyApp extends StatelessWidget {
               "symbol": "VNINDEX",
             },
           ],
-        ),
-        child: const TradingScreen(),
-      ),
-      debugShowCheckedModeBanner: false,
+          exchangeStream: null,
+          // THÊM CALLBACK VÀO ĐÂY
+          onSearchPressed: (data) {
+            debugPrint("========== SEARCH CALLBACK TRIGGERED ==========");
+            debugPrint("Data received: $data");
+
+            // Hiển thị SnackBar để test
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Search pressed! Data: $data'),
+                backgroundColor: AppColors.priceUp,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+
+            // Hoặc navigate đến trang search
+            /*
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SearchPage(data: data),
+              ),
+            );
+            */
+          },
+        );
+      },
+      child: const TradingScreen(symbol: 'SSI'),
     );
   }
 }

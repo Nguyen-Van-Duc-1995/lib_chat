@@ -143,10 +143,20 @@ class HeaderSection extends StatelessWidget {
                 children: [
                   Icon(Icons.star, color: AppColors.accentYellow, size: 24),
                   const SizedBox(width: 12),
-                  Icon(
-                    Icons.notifications_outlined,
-                    color: AppColors.textPrimary,
-                    size: 24,
+                  // Icon(
+                  //   Icons.notifications_outlined,
+                  //   color: AppColors.textPrimary,
+                  //   size: 24,
+                  // ),
+                  GestureDetector(
+                    onTap: () {
+                      viewModel.handleSearchPressed({'action': 'search'});
+                    },
+                    child: Icon(
+                      Icons.search,
+                      color: AppColors.textPrimary,
+                      size: 24,
+                    ),
                   ),
                 ],
               ),

@@ -20,6 +20,7 @@ class TradingViewModel extends ChangeNotifier {
   final dynamic exchange;
   final dynamic exchangeStream;
   final dynamic _currentExchange;
+  final Function(dynamic)? onSearchPressed;
 
   TradingViewModel({
     required this.symbol,
@@ -27,6 +28,7 @@ class TradingViewModel extends ChangeNotifier {
     this.stockdata,
     this.exchange,
     this.exchangeStream,
+    this.onSearchPressed,
   }) : _binanceService = BinanceService(
          symbol: symbol,
          streamdata: klineStream,
@@ -34,6 +36,9 @@ class TradingViewModel extends ChangeNotifier {
        ),
        _currentExchange = exchange {
     // Khởi tạo với giá trị ban đầu
+    debugPrint(
+      "TradingViewModel created with callback: ${onSearchPressed != null ? 'NOT NULL' : 'NULL'}",
+    );
     _initialize();
   }
   String _currentInterval = '1d';
@@ -114,6 +119,14 @@ class TradingViewModel extends ChangeNotifier {
 
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
+
+  void handleSearchPressed(dynamic data) {
+    if (onSearchPressed != null) {
+      onSearchPressed!(data);
+    } else {
+      debugPrint("Search pressed - no callback assigned.");
+    }
+  }
 
   void setSelectedTab(int index) {
     _selectedTab = index;
