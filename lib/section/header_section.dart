@@ -60,7 +60,8 @@ class HeaderSection extends StatelessWidget {
                 children: [
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTap: () => Navigator.of(context).pop(),
+                    onTap: () =>
+                        Navigator.popUntil(context, (route) => route.isFirst),
                     child: Padding(
                       padding: const EdgeInsets.only(right: 3),
                       child: Icon(
