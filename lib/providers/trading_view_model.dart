@@ -337,6 +337,13 @@ class TradingViewModel extends ChangeNotifier {
               ? data['LastPrice'].toDouble()
               : math.min(lowest, data['LastPrice'].toDouble());
           try {
+            _trades.insert(0, TradeEntry.fromJson(data));
+            if (_trades.length > 100) {
+              _trades = _trades.sublist(0, 100);
+            }
+            notifyListeners();
+          } catch (e) {}
+          try {
             final newKline = KlineData.fromJson({
               "TradingDate": data['TradingDate'],
               "Time": data['Time'],
@@ -346,8 +353,6 @@ class TradingViewModel extends ChangeNotifier {
               "LastPrice": data['LastPrice'],
               "TotalVol": data['TotalVol'] - _klines.last.volume,
             });
-            print(newKline.time);
-            print(_klines.last.time);
             if (_klines.isEmpty ||
                 newKline.time >
                     _klines.last.time +
