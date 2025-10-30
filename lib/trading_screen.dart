@@ -1,7 +1,6 @@
 import 'package:chart/providers/trading_view_model.dart';
 import 'package:chart/section/header_section.dart';
 import 'package:chart/section/market_info_section.dart';
-import 'package:chart/section/order_book_section.dart';
 import 'package:chart/section/trade_history_section.dart';
 import 'package:chart/widget/action_buttons.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +16,7 @@ import 'utils/colors.dart';
 class TradingScreen extends StatefulWidget {
   final String symbol;
   const TradingScreen({super.key, this.symbol = 'AAA'});
+
   @override
   State<TradingScreen> createState() => _TradingScreenState();
 }
@@ -24,10 +24,13 @@ class TradingScreen extends StatefulWidget {
 class _TradingScreenState extends State<TradingScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    // Giảm từ 3 còn 2
+    _tabController = TabController(length: 2, vsync: this);
+
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         Provider.of<TradingViewModel>(
@@ -41,10 +44,11 @@ class _TradingScreenState extends State<TradingScreen>
                 context,
                 listen: false,
               ).selectedTab) {
-        if (mounted)
+        if (mounted) {
           _tabController.animateTo(
             Provider.of<TradingViewModel>(context, listen: false).selectedTab,
           );
+        }
       }
     });
   }
@@ -61,6 +65,7 @@ class _TradingScreenState extends State<TradingScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       viewModel.updateSymbol(widget.symbol);
     });
+
     if (_tabController.index != viewModel.selectedTab) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _tabController.animateTo(viewModel.selectedTab);
@@ -108,7 +113,6 @@ class _TradingScreenState extends State<TradingScreen>
               fontWeight: FontWeight.w600,
             ),
             tabs: const [
-              Tab(text: 'Sổ lệnh'),
               Tab(text: 'Lệnh khớp'),
               Tab(text: 'Thông tin'),
             ],
@@ -118,14 +122,13 @@ class _TradingScreenState extends State<TradingScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                OrderBookSection(viewModel: viewModel),
                 TradeHistorySection(viewModel: viewModel),
                 MarketInfoSection(viewModel: viewModel),
               ],
             ),
           ),
           Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             color: AppColors.background,
             child: const ActionButtons(),
           ),
