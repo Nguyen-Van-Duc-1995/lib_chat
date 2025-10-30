@@ -47,7 +47,7 @@ class TradeEntry {
     return TradeEntry(
       time: dt.millisecondsSinceEpoch,
       price: (json['LastPrice'] as num).toDouble(),
-      quantity: (json['TotalVol'] as num).toDouble(),
+      quantity: (json['LastVol'] as num).toDouble(),
       isBuyerMaker: false, // mặc định false nếu không có
     );
   }
