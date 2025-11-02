@@ -35,7 +35,7 @@ class OrderBookSection extends StatelessWidget {
               Expanded(
                 flex: 3,
                 child: Text(
-                  'Giá (USDT)',
+                  'Giá (VND)',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 11,

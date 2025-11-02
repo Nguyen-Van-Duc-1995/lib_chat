@@ -31,7 +31,7 @@ class TradeHistorySection extends StatelessWidget {
               Expanded(
                 flex: 3,
                 child: Text(
-                  'Giá(USDT)',
+                  'Giá(VND)',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 11,
@@ -82,7 +82,10 @@ class TradeHistorySection extends StatelessWidget {
                     Expanded(
                       flex: 3,
                       child: Text(
-                        FormatUtils.formatPrice(trade.price, decimalPlaces: 2),
+                        FormatUtils.formatPrice(
+                          trade.price / 1000,
+                          decimalPlaces: 2,
+                        ),
                         style: TextStyle(
                           color: priceColor,
                           fontSize: 11,
