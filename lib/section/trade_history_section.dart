@@ -5,16 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class TradeHistorySection extends StatelessWidget {
-  /* ... giữ nguyên, bỏ const ở TextStyle nếu cần ... */
   final TradingViewModel viewModel;
   const TradeHistorySection({super.key, required this.viewModel});
+
   @override
   Widget build(BuildContext context) {
     final numberFormat = NumberFormat('#,###.##');
+
     if (viewModel.trades.isEmpty && viewModel.isLoading)
       return const Center(
         child: CircularProgressIndicator(color: AppColors.accentYellow),
       );
+
     if (viewModel.trades.isEmpty)
       return const Center(
         child: Text(
@@ -22,6 +24,7 @@ class TradeHistorySection extends StatelessWidget {
           style: TextStyle(color: AppColors.textSecondary),
         ),
       );
+
     return Column(
       children: [
         Padding(
@@ -38,7 +41,7 @@ class TradeHistorySection extends StatelessWidget {
                     fontSize: 11,
                   ),
                 ),
-              ), // Bỏ const
+              ),
               Expanded(
                 flex: 3,
                 child: Text(
@@ -49,7 +52,18 @@ class TradeHistorySection extends StatelessWidget {
                   ),
                   textAlign: TextAlign.right,
                 ),
-              ), // Bỏ const
+              ),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  'M/B',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
               Expanded(
                 flex: 4,
                 child: Text(
@@ -63,7 +77,7 @@ class TradeHistorySection extends StatelessWidget {
               ),
             ],
           ),
-        ), // Bỏ const
+        ),
         Expanded(
           child: ListView.builder(
             itemCount: viewModel.trades.length,
@@ -72,6 +86,8 @@ class TradeHistorySection extends StatelessWidget {
               final Color priceColor = trade.isBuyerMaker
                   ? AppColors.priceDown
                   : AppColors.priceUp;
+              final String tradeType = trade.isBuyerMaker ? 'Mua' : 'Bán';
+
               return Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12.0,
@@ -104,7 +120,19 @@ class TradeHistorySection extends StatelessWidget {
                         ),
                         textAlign: TextAlign.right,
                       ),
-                    ), // Bỏ const
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        tradeType,
+                        style: TextStyle(
+                          color: priceColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                     Expanded(
                       flex: 4,
                       child: Text(
@@ -123,6 +151,6 @@ class TradeHistorySection extends StatelessWidget {
           ),
         ),
       ],
-    ); // Bỏ const
+    );
   }
 }
