@@ -10,6 +10,7 @@ class TradeHistorySection extends StatelessWidget {
   const TradeHistorySection({super.key, required this.viewModel});
   @override
   Widget build(BuildContext context) {
+    final numberFormat = NumberFormat('#,###.##');
     if (viewModel.trades.isEmpty && viewModel.isLoading)
       return const Center(
         child: CircularProgressIndicator(color: AppColors.accentYellow),
@@ -96,10 +97,7 @@ class TradeHistorySection extends StatelessWidget {
                     Expanded(
                       flex: 3,
                       child: Text(
-                        FormatUtils.formatNumber(
-                          trade.quantity,
-                          decimalPlaces: 4,
-                        ),
+                        numberFormat.format(trade.quantity),
                         style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 11,
