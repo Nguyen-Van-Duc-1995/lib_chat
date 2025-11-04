@@ -48,7 +48,7 @@ class TradeEntry {
       time: dt.millisecondsSinceEpoch,
       price: (json['LastPrice'] as num).toDouble(),
       quantity: (json['LastVol'] as num).toDouble(),
-      isBuyerMaker: false, // mặc định false nếu không có
+      isBuyerMaker: (json['Side'] == 'BU'), // mặc định false nếu không có
     );
   }
 

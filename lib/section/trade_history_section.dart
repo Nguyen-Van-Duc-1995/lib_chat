@@ -17,14 +17,6 @@ class TradeHistorySection extends StatelessWidget {
         child: CircularProgressIndicator(color: AppColors.accentYellow),
       );
 
-    if (viewModel.trades.isEmpty)
-      return const Center(
-        child: Text(
-          "Không có dữ liệu lệnh khớp.",
-          style: TextStyle(color: AppColors.textSecondary),
-        ),
-      );
-
     return Column(
       children: [
         Padding(
@@ -54,7 +46,7 @@ class TradeHistorySection extends StatelessWidget {
                 ),
               ),
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: Text(
                   'M/B',
                   style: TextStyle(
@@ -78,78 +70,81 @@ class TradeHistorySection extends StatelessWidget {
             ],
           ),
         ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: viewModel.trades.length,
-            itemBuilder: (context, index) {
-              final trade = viewModel.trades[index];
-              final Color priceColor = trade.isBuyerMaker
-                  ? AppColors.priceDown
-                  : AppColors.priceUp;
-              final String tradeType = trade.isBuyerMaker ? 'Mua' : 'Bán';
+        if (viewModel.trades.isNotEmpty)
+          Expanded(
+            child: ListView.builder(
+              itemCount: viewModel.trades.length,
+              itemBuilder: (context, index) {
+                final trade = viewModel.trades[index];
+                final Color priceColor = trade.isBuyerMaker
+                    ? AppColors.priceDown
+                    : AppColors.priceUp;
+                final String tradeType = trade.isBuyerMaker ? 'Mua' : 'Bán';
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12.0,
-                  vertical: 3.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        FormatUtils.formatPrice(
-                          trade.price / 1000,
-                          decimalPlaces: 2,
-                        ),
-                        style: TextStyle(
-                          color: priceColor,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12.0,
+                    vertical: 3.0,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          FormatUtils.formatPrice(
+                            trade.price / 1000,
+                            decimalPlaces: 2,
+                          ),
+                          style: TextStyle(
+                            color: priceColor,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        numberFormat.format(trade.quantity),
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 11,
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          numberFormat.format(trade.quantity),
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.right,
                         ),
-                        textAlign: TextAlign.right,
                       ),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        tradeType,
-                        style: TextStyle(
-                          color: priceColor,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          tradeType,
+                          style: TextStyle(
+                            color: trade.isBuyerMaker
+                                ? AppColors.priceUp
+                                : AppColors.priceDown,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    Expanded(
-                      flex: 4,
-                      child: Text(
-                        DateFormat('HH:mm:ss').format(trade.dateTime),
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
+                      Expanded(
+                        flex: 4,
+                        child: Text(
+                          DateFormat('HH:mm:ss').format(trade.dateTime),
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.right,
                         ),
-                        textAlign: TextAlign.right,
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
-        ),
       ],
     );
   }
