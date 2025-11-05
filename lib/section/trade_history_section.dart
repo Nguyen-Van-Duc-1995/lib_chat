@@ -45,7 +45,7 @@ class TradeHistorySection extends StatelessWidget {
                   textAlign: TextAlign.right,
                 ),
               ),
-              SizedBox(width: 21),
+              SizedBox(width: 29),
               Expanded(
                 flex: 3,
                 child: Text(
@@ -115,7 +115,7 @@ class TradeHistorySection extends StatelessWidget {
                           textAlign: TextAlign.right,
                         ),
                       ),
-                      SizedBox(width: 21),
+                      SizedBox(width: 29),
                       Expanded(
                         flex: 3,
                         child: Text(
