@@ -273,8 +273,8 @@ class TradingViewModel extends ChangeNotifier {
     _tradeSubscription = _binanceService.subscribeToTrades().listen((data) {
       try {
         _trades.insert(0, TradeEntry.fromBinanceTrade(data));
-        if (_trades.length > 100) {
-          _trades = _trades.sublist(0, 100);
+        if (_trades.length > 1000) {
+          _trades = _trades.sublist(0, 1000);
         }
         notifyListeners();
       } catch (e) {
