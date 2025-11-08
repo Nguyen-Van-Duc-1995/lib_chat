@@ -15,8 +15,9 @@ class HeaderSection extends StatelessWidget {
     final ticker = viewModel.tickerData;
     if (ticker == null) {
       return Container(
+        height: MediaQuery.of(context).padding.top + 149,
         padding: const EdgeInsets.all(16),
-        color: AppColors.cardBackground,
+        color: AppColors.background,
         child: const Center(child: GlowingLoader()),
       );
     }
