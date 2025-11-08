@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:chart/candlestick/candlestick_painter.dart';
 import 'package:chart/chart_screen.dart';
 import 'package:chart/model/kline_data.dart';
-import 'package:chart/utils/colors.dart';
 import 'package:chart/utils/const.dart';
 
 class CandlestickChart extends StatefulWidget {
@@ -79,20 +78,6 @@ class _CandlestickChartState extends State<CandlestickChart> {
     return niceStep * magnitude;
   }
 
-  /// Định dạng giá cho label
-  String _formatPriceLabel(double price) {
-    if (price >= 1000000) {
-      return '${(price / 1000000).toStringAsFixed(1)}M';
-    } else if (price >= 1000) {
-      return '${(price / 1000).toStringAsFixed(1)}K';
-    } else if (price >= 1) {
-      return price.toStringAsFixed(2);
-    } else {
-      // Cho crypto với giá nhỏ
-      return price.toStringAsFixed(6);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     countFrame = 3;
@@ -102,15 +87,6 @@ class _CandlestickChartState extends State<CandlestickChart> {
     if (widget.showMFI) ++countFrame;
 
     final klines = widget.klines;
-
-    if (klines.isEmpty) {
-      return const Center(
-        child: Text(
-          "Không có dữ liệu nến",
-          style: TextStyle(color: AppColors.textSecondary),
-        ),
-      );
-    }
 
     return Padding(
       padding: const EdgeInsets.only(
@@ -125,6 +101,10 @@ class _CandlestickChartState extends State<CandlestickChart> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final double candleWidthWithSpacing = candleWidth + spacing;
+            if (klines.isEmpty || candleWidthWithSpacing == 0) {
+              // Không tính toán gì khi không có dữ liệu
+              return const SizedBox.shrink();
+            }
 
             final double baseContentWidth =
                 candleWidthWithSpacing * klines.length;
