@@ -10,7 +10,6 @@ import 'package:chart/candlestick/chart_section.dart';
 import 'package:chart/widget/indicator_shortcut_controls.dart';
 import 'package:chart/widget/timeframe_controls.dart';
 
-import 'chart_screen.dart';
 import 'utils/colors.dart';
 
 class TradingScreen extends StatefulWidget {

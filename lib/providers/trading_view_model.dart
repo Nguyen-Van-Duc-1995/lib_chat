@@ -6,6 +6,7 @@ import 'package:chart/model/kline_data.dart';
 import 'package:chart/model/order_book_entry.dart';
 import 'package:chart/model/ticker_data.dart';
 import 'package:chart/model/trade_entry.dart';
+import 'package:chart/services/list_orders_services.dart';
 import 'package:chart/socket.dart';
 import 'package:chart/utils/indicator_calculator.dart';
 import 'package:chart/utils/manager_value.dart';
@@ -138,7 +139,20 @@ class TradingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _orderList(String symbol) async {
+    try {
+      List<dynamic> orders = await OrderService.listOrdersServices(symbol);
+      for (var data in orders) {
+        final trade = TradeEntry.fromJson(data);
+        _trades.insert(0, trade);
+      }
+    } catch (e) {
+      print('Lỗi khi lấy danh sách lệnh: $e');
+    }
+  }
+
   Future<void> _initialize() async {
+    _orderList(symbol);
     _setLoading(true);
     await _fetchInitialData();
     _subscribeToStreams();
@@ -338,8 +352,8 @@ class TradingViewModel extends ChangeNotifier {
               : math.min(lowest, data['LastPrice'].toDouble());
           try {
             _trades.insert(0, TradeEntry.fromJson(data));
-            if (_trades.length > 100) {
-              _trades = _trades.sublist(0, 100);
+            if (_trades.length > 1000) {
+              _trades = _trades.sublist(0, 1000);
             }
             notifyListeners();
           } catch (e) {}
