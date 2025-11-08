@@ -1,4 +1,5 @@
 import 'package:chart/providers/trading_view_model.dart';
+import 'package:chart/utils/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:chart/candlestick/candlestick_chart.dart';
 import 'package:chart/utils/colors.dart';
@@ -28,19 +29,8 @@ class ChartSection extends StatelessWidget {
         ),
 
         // Overlay loading khi đang tải
-        if (viewModel.isLoading && viewModel.klines.isNotEmpty)
-          Positioned.fill(
-            child: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const Center(
-                child: CircularProgressIndicator(color: AppColors.accentYellow),
-              ),
-            ),
-          ),
+        if (viewModel.klines.isEmpty && viewModel.isLoading)
+          Positioned.fill(child: const GlowingLoader()),
 
         // Hiển thị khi không có dữ liệu nến
         if (viewModel.klines.isEmpty && !viewModel.isLoading)

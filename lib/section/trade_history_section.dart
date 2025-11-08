@@ -1,6 +1,7 @@
 import 'package:chart/providers/trading_view_model.dart';
 import 'package:chart/utils/colors.dart';
 import 'package:chart/utils/format.dart';
+import 'package:chart/utils/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -13,9 +14,7 @@ class TradeHistorySection extends StatelessWidget {
     final numberFormat = NumberFormat('#,###.##');
 
     if (viewModel.trades.isEmpty && viewModel.isLoading)
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.accentYellow),
-      );
+      return Center(child: GlowingLoader());
 
     return Column(
       children: [

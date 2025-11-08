@@ -1,6 +1,7 @@
 import 'package:chart/providers/trading_view_model.dart';
 import 'package:chart/utils/colors.dart';
 import 'package:chart/utils/format.dart';
+import 'package:chart/utils/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -16,9 +17,7 @@ class HeaderSection extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         color: AppColors.cardBackground,
-        child: const Center(
-          child: CircularProgressIndicator(color: AppColors.accentYellow),
-        ),
+        child: const Center(child: GlowingLoader()),
       );
     }
 
