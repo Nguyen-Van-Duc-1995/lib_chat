@@ -142,10 +142,7 @@ class TradingViewModel extends ChangeNotifier {
   void _orderList(String symbol) async {
     try {
       List<dynamic> orders = await OrderService.listOrdersServices(symbol);
-      for (var data in orders) {
-        final trade = TradeEntry.fromJson(data);
-        _trades.insert(0, trade);
-      }
+      _trades.addAll(orders.map((data) => TradeEntry.fromJson(data)).toList());
     } catch (e) {
       print('Lỗi khi lấy danh sách lệnh: $e');
     }
