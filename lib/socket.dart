@@ -36,33 +36,33 @@ class BinanceService {
     }
   }
 
-  void _connectWebSocket() {
-    try {
-      // Create stream names for Binance WebSocket
-      final symbolLower = symbol.toLowerCase();
-      final streams = [
-        '$symbolLower@ticker', // 24hr ticker statistics
-        '$symbolLower@depth20@100ms', // Order book depth
-        '$symbolLower@trade', // Trade streams
-        '$symbolLower@kline_$_currentKlineInterval', // Kline/candlestick
-      ];
+  // void _connectWebSocket() {
+  //   try {
+  //     // Create stream names for Binance WebSocket
+  //     final symbolLower = symbol.toLowerCase();
+  //     final streams = [
+  //       '$symbolLower@ticker', // 24hr ticker statistics
+  //       '$symbolLower@depth20@100ms', // Order book depth
+  //       '$symbolLower@trade', // Trade streams
+  //       '$symbolLower@kline_$_currentKlineInterval', // Kline/candlestick
+  //     ];
 
-      final url =
-          'wss://stream.binance.com:9443/stream?streams=${streams.join("/")}';
+  //     final url =
+  //         'wss://stream.binance.com:9443/stream?streams=${streams.join("/")}';
 
-      _channel = WebSocketChannel.connect(Uri.parse(url));
-      _channelSubscription = _channel!.stream.listen(
-        _handleWebSocketMessage,
-        onError: _handleWebSocketError,
-        onDone: _handleWebSocketClosed,
-      );
+  //     _channel = WebSocketChannel.connect(Uri.parse(url));
+  //     _channelSubscription = _channel!.stream.listen(
+  //       _handleWebSocketMessage,
+  //       onError: _handleWebSocketError,
+  //       onDone: _handleWebSocketClosed,
+  //     );
 
-      // print('Connected to Binance WebSocket: $url');
-    } catch (e) {
-      print('Error connecting to WebSocket: $e');
-      _reconnectAfterDelay();
-    }
-  }
+  //     // print('Connected to Binance WebSocket: $url');
+  //   } catch (e) {
+  //     print('Error connecting to WebSocket: $e');
+  //     _reconnectAfterDelay();
+  //   }
+  // }
 
   void _handleWebSocketMessage(dynamic message) {
     try {
@@ -103,7 +103,7 @@ class BinanceService {
     Timer(const Duration(seconds: 5), () {
       if (!_isDisposed) {
         print('Attempting to reconnect...');
-        _connectWebSocket();
+        // _connectWebSocket();
       }
     });
   }
@@ -119,7 +119,7 @@ class BinanceService {
   void _reconnectWithNewInterval() {
     _channelSubscription?.cancel();
     _channel?.sink.close();
-    _connectWebSocket();
+    // _connectWebSocket();
   }
 
   // Fetch historical kline data from REST API
@@ -219,25 +219,25 @@ class BinanceService {
   }
 
   // Fetch 24hr ticker data from REST API
-  Future<TickerData?> fetch24hrTickerBiance() async {
-    try {
-      final url =
-          'https://api.binance.com/api/v3/ticker/24hr'
-          '?symbol=${symbol.toUpperCase()}';
+  // Future<TickerData?> fetch24hrTickerBiance() async {
+  //   try {
+  //     final url =
+  //         'https://api.binance.com/api/v3/ticker/24hr'
+  //         '?symbol=${symbol.toUpperCase()}';
 
-      final response = await http.get(Uri.parse(url));
+  //     final response = await http.get(Uri.parse(url));
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        return TickerData.fromBinance24hrTicker(data);
-      } else {
-        throw Exception('Failed to fetch ticker: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching ticker: $e');
-      return null;
-    }
-  }
+  //     if (response.statusCode == 200) {
+  //       final Map<String, dynamic> data = json.decode(response.body);
+  //       return TickerData.fromBinance24hrTicker(data);
+  //     } else {
+  //       throw Exception('Failed to fetch ticker: ${response.statusCode}');
+  //     }
+  //   } catch (e) {
+  //     print('Error fetching ticker: $e');
+  //     return null;
+  //   }
+  // }
 
   Future<TickerData?> fetch24hrTicker() async {
     try {
