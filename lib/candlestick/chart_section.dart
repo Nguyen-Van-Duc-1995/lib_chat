@@ -10,24 +10,16 @@ class ChartSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Chiều cao cơ bản
     const double baseHeight = 358;
 
-    // Nếu chưa có dữ liệu => hiển thị khung trống cố định
+    // Khi chưa có dữ liệu
     if (viewModel.klines.isEmpty) {
       return Container(
         height: baseHeight,
         color: Colors.black.withOpacity(0.02),
         alignment: Alignment.center,
         child: viewModel.isLoading
-            ? const SizedBox(
-                width: 30,
-                height: 30,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: AppColors.accentYellow,
-                ),
-              )
+            ? const SizedBox(width: 40, height: 40, child: GlowingLoader())
             : Icon(
                 Icons.bar_chart_rounded,
                 color: AppColors.textSecondary.withOpacity(0.6),
@@ -36,7 +28,7 @@ class ChartSection extends StatelessWidget {
       );
     }
 
-    // Nếu có dữ liệu thì hiển thị biểu đồ thật
+    // Khi đã có dữ liệu
     return Stack(
       children: [
         CandlestickChart(
@@ -51,18 +43,16 @@ class ChartSection extends StatelessWidget {
           showIchimoku: viewModel.showIchimoku,
         ),
 
+        // Overlay loading (vẫn xoay trong khung nến)
         if (viewModel.isLoading)
           Positioned.fill(
             child: Container(
               color: Colors.black.withOpacity(0.03),
               alignment: Alignment.center,
               child: const SizedBox(
-                width: 30,
-                height: 30,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: AppColors.accentYellow,
-                ),
+                width: 40,
+                height: 40,
+                child: GlowingLoader(),
               ),
             ),
           ),
