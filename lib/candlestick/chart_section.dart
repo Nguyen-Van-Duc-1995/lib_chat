@@ -10,38 +10,59 @@ class ChartSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Chiều cao cơ bản
+    const double baseHeight = 358;
+
+    // Nếu chưa có dữ liệu => hiển thị khung trống cố định
+    if (viewModel.klines.isEmpty) {
+      return Container(
+        height: baseHeight,
+        color: Colors.black.withOpacity(0.02),
+        alignment: Alignment.center,
+        child: viewModel.isLoading
+            ? const SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.accentYellow,
+                ),
+              )
+            : Icon(
+                Icons.bar_chart_rounded,
+                color: AppColors.textSecondary.withOpacity(0.6),
+                size: 22,
+              ),
+      );
+    }
+
+    // Nếu có dữ liệu thì hiển thị biểu đồ thật
     return Stack(
       children: [
-        // Biểu đồ (hiện khung kể cả khi trống)
-        Container(
-          color: Colors.black.withOpacity(0.02),
-          child: CandlestickChart(
-            klines: viewModel.klines,
-            showEMA20: viewModel.showEMA20,
-            showEMA50: viewModel.showEMA50,
-            showBB: viewModel.showBB,
-            showVolume: viewModel.showVolume,
-            showRSI: viewModel.showRSI,
-            showMACD: viewModel.showMACD,
-            showMFI: viewModel.showMFI,
-            showIchimoku: viewModel.showIchimoku,
-          ),
+        CandlestickChart(
+          klines: viewModel.klines,
+          showEMA20: viewModel.showEMA20,
+          showEMA50: viewModel.showEMA50,
+          showBB: viewModel.showBB,
+          showVolume: viewModel.showVolume,
+          showRSI: viewModel.showRSI,
+          showMACD: viewModel.showMACD,
+          showMFI: viewModel.showMFI,
+          showIchimoku: viewModel.showIchimoku,
         ),
 
-        // Overlay loading khi đang tải
-        if (viewModel.klines.isEmpty && viewModel.isLoading)
-          Positioned.fill(child: const GlowingLoader()),
-
-        // Hiển thị khi không có dữ liệu nến
-        if (viewModel.klines.isEmpty && !viewModel.isLoading)
+        if (viewModel.isLoading)
           Positioned.fill(
             child: Container(
-              alignment: Alignment.center,
               color: Colors.black.withOpacity(0.03),
-              child: Icon(
-                Icons.bar_chart_rounded,
-                color: AppColors.textSecondary,
-                size: 20,
+              alignment: Alignment.center,
+              child: const SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.accentYellow,
+                ),
               ),
             ),
           ),
