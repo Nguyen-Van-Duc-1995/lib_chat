@@ -4,17 +4,25 @@ import 'package:http/http.dart' as http;
 class OrderService {
   static const String _baseUrl = 'https://softsama.com/stock/api/orders';
 
-  /// Hàm lấy danh sách lệnh theo mã chứng khoán (VD: MBB)
-  static Future<List<dynamic>> listOrdersServices(String symbol) async {
-    final url = Uri.parse('$_baseUrl?symbol=$symbol&limit=100');
+  /// Lấy danh sách lệnh theo symbol (có thể truyền URL đầy đủ)
+  static Future<List<dynamic>> listOrdersServices(
+    String symbol, {
+    int? time,
+  }) async {
+    // Nếu time != null thì thêm query time
+    final queryParameters = {
+      'symbol': symbol,
+      'limit': '100',
+      if (time != null) 'time': time.toString(),
+    };
+
+    final url = Uri.parse(_baseUrl).replace(queryParameters: queryParameters);
 
     try {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        // Giải mã JSON trả về
         final data = jsonDecode(response.body);
-        // Trả về danh sách lệnh
         return data['data'];
       } else {
         throw Exception('Lỗi khi gọi API: ${response.statusCode}');

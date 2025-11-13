@@ -3,18 +3,50 @@ import 'package:chart/utils/colors.dart';
 import 'package:chart/utils/format.dart';
 import 'package:chart/utils/loader.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-class TradeHistorySection extends StatelessWidget {
+class TradeHistorySection extends HookWidget {
   final TradingViewModel viewModel;
   const TradeHistorySection({super.key, required this.viewModel});
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<TradingViewModel>();
     final numberFormat = NumberFormat('#,###.##');
+    final scrollController = useScrollController();
 
-    if (viewModel.trades.isEmpty && viewModel.isLoading)
-      return Center(child: GlowingLoader());
+    // 👇 Biến trạng thái riêng để quản lý "đang load thêm"
+    final isLoadingMore = useState(false);
+
+    // 👇 Lắng nghe khi cuộn đến gần cuối danh sách
+    useEffect(() {
+      Future<void> handleLoadMore() async {
+        if (isLoadingMore.value ||
+            viewModel.isLoading ||
+            viewModel.trades.isEmpty)
+          return;
+
+        isLoadingMore.value = true;
+        await viewModel.loadMoreTrades();
+        isLoadingMore.value = false;
+      }
+
+      void onScroll() {
+        if (scrollController.position.pixels >=
+            scrollController.position.maxScrollExtent - 100) {
+          handleLoadMore();
+        }
+      }
+
+      scrollController.addListener(onScroll);
+      return () => scrollController.removeListener(onScroll);
+    }, [scrollController, viewModel]);
+
+    if (viewModel.trades.isEmpty && viewModel.isLoading) {
+      return const Center(child: GlowingLoader());
+    }
 
     return Column(
       children: [
@@ -44,7 +76,7 @@ class TradeHistorySection extends StatelessWidget {
                   textAlign: TextAlign.right,
                 ),
               ),
-              SizedBox(width: 29),
+              const SizedBox(width: 29),
               Expanded(
                 flex: 3,
                 child: Text(
@@ -73,8 +105,18 @@ class TradeHistorySection extends StatelessWidget {
         if (viewModel.trades.isNotEmpty)
           Expanded(
             child: ListView.builder(
-              itemCount: viewModel.trades.length,
+              controller: scrollController,
+              itemCount:
+                  viewModel.trades.length + (isLoadingMore.value ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index >= viewModel.trades.length) {
+                  // Loader cuối danh sách
+                  return const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Center(child: GlowingLoader()),
+                  );
+                }
+
                 final trade = viewModel.trades[index];
                 final Color priceColor = trade.isBuyerMaker
                     ? AppColors.priceDown
@@ -114,7 +156,7 @@ class TradeHistorySection extends StatelessWidget {
                           textAlign: TextAlign.right,
                         ),
                       ),
-                      SizedBox(width: 29),
+                      const SizedBox(width: 29),
                       Expanded(
                         flex: 3,
                         child: Text(

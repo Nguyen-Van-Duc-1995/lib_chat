@@ -148,6 +148,28 @@ class TradingViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> loadMoreTrades() async {
+    if (_trades.isEmpty) return;
+
+    try {
+      final lastTradeTime = _trades.last.dateTime.millisecondsSinceEpoch;
+
+      // Truyền time vào API
+      List<dynamic> orders = await OrderService.listOrdersServices(
+        symbol,
+        time: lastTradeTime,
+      );
+
+      final newTrades = orders
+          .map((data) => TradeEntry.fromJson(data))
+          .toList();
+
+      _trades.addAll(newTrades);
+    } catch (e) {
+      print('Lỗi khi lấy danh sách lệnh: $e');
+    }
+  }
+
   Future<void> _initialize() async {
     _orderList(symbol);
     _setLoading(true);
