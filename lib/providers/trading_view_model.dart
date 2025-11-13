@@ -152,18 +152,20 @@ class TradingViewModel extends ChangeNotifier {
     if (_trades.isEmpty) return;
 
     try {
-      final lastTradeTime = _trades.last.dateTime.millisecondsSinceEpoch;
+      // Lấy _id của lệnh cuối cùng
+      final lastId = _trades.last.id;
 
-      // Truyền time vào API
+      // Gọi API với last_id
       List<dynamic> orders = await OrderService.listOrdersServices(
         symbol,
-        time: lastTradeTime,
+        lastId: lastId, // cần thêm param lastId trong OrderService
       );
 
       final newTrades = orders
           .map((data) => TradeEntry.fromJson(data))
           .toList();
 
+      // Append dữ liệu mới vào danh sách hiện tại
       _trades.addAll(newTrades);
     } catch (e) {
       print('Lỗi khi lấy danh sách lệnh: $e');

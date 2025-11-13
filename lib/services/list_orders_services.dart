@@ -7,13 +7,12 @@ class OrderService {
   /// Lấy danh sách lệnh theo symbol (có thể truyền URL đầy đủ)
   static Future<List<dynamic>> listOrdersServices(
     String symbol, {
-    int? time,
+    String? lastId,
   }) async {
-    // Nếu time != null thì thêm query time
     final queryParameters = {
       'symbol': symbol,
       'limit': '100',
-      if (time != null) 'time': time.toString(),
+      if (lastId != null) 'last_id': lastId,
     };
 
     final url = Uri.parse(_baseUrl).replace(queryParameters: queryParameters);
