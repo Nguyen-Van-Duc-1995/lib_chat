@@ -74,7 +74,7 @@ class TradeHistorySection extends HookWidget {
               Expanded(
                 flex: 4,
                 child: Text(
-                  'Giá(VND)',
+                  'Giá',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 11,
@@ -105,7 +105,7 @@ class TradeHistorySection extends HookWidget {
               Expanded(
                 flex: 3,
                 child: Text(
-                  'KL(${viewModel.tickerData?.symbol.replaceAll("USDT", "").replaceAll("BUSD", "") ?? "COIN"})',
+                  'KL',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 11,
