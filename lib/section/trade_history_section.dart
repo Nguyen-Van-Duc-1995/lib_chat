@@ -139,7 +139,10 @@ class TradeHistorySection extends HookWidget {
                             decimalPlaces: 2,
                           ),
                           style: TextStyle(
-                            color: priceColor,
+                            color: FilterColorsFromTicker.getColor(
+                              viewModel.tickerData!.high24h,
+                              viewModel.tickerData!,
+                            ),
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                           ),
