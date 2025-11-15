@@ -262,7 +262,7 @@ class HeaderSection extends StatelessWidget {
                                   ticker.refPrice / 1000,
                                   decimalPlaces: 2,
                                 ),
-                                AppColors.accentYellow,
+                                AppColors.yellowColor,
                               ),
                             ],
                           ),
