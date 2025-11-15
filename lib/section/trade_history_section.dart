@@ -48,11 +48,6 @@ class TradeHistorySection extends HookWidget {
       return const Center(child: GlowingLoader());
     }
 
-    Color color = FilterColorsFromTicker.getColor(
-      viewModel.tickerData!.high24h,
-      viewModel.tickerData!,
-    );
-
     return Column(
       children: [
         Padding(
@@ -144,9 +139,11 @@ class TradeHistorySection extends HookWidget {
                 }
 
                 final trade = viewModel.trades[index];
-                final Color priceColor = trade.isBuyerMaker
-                    ? AppColors.priceDown
-                    : AppColors.priceUp;
+
+                Color color = FilterColorsFromTicker.getColor(
+                  trade.price,
+                  viewModel.tickerData!,
+                );
                 final String tradeType = trade.isBuyerMaker ? 'Mua' : 'Bán';
 
                 return Padding(
