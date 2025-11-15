@@ -48,6 +48,11 @@ class TradeHistorySection extends HookWidget {
       return const Center(child: GlowingLoader());
     }
 
+    Color color = FilterColorsFromTicker.getColor(
+      viewModel.tickerData!.high24h,
+      viewModel.tickerData!,
+    );
+
     return Column(
       children: [
         Padding(
@@ -56,7 +61,18 @@ class TradeHistorySection extends HookWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                flex: 3,
+                flex: 4,
+                child: Text(
+                  'Thời gian',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+              Expanded(
+                flex: 4,
                 child: Text(
                   'Giá(VND)',
                   style: TextStyle(
@@ -68,6 +84,27 @@ class TradeHistorySection extends HookWidget {
               Expanded(
                 flex: 3,
                 child: Text(
+                  '  +/-',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  '   %',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+
+              Expanded(
+                flex: 3,
+                child: Text(
                   'KL(${viewModel.tickerData?.symbol.replaceAll("USDT", "").replaceAll("BUSD", "") ?? "COIN"})',
                   style: TextStyle(
                     color: AppColors.textSecondary,
@@ -76,22 +113,11 @@ class TradeHistorySection extends HookWidget {
                   textAlign: TextAlign.right,
                 ),
               ),
-              const SizedBox(width: 29),
+
               Expanded(
                 flex: 3,
                 child: Text(
                   'M/B',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Expanded(
-                flex: 4,
-                child: Text(
-                  'Thời gian',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 11,
@@ -132,17 +158,50 @@ class TradeHistorySection extends HookWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        flex: 3,
+                        flex: 4,
+                        child: Text(
+                          DateFormat('HH:mm:ss').format(trade.dateTime),
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 4,
                         child: Text(
                           FormatUtils.formatPrice(
                             trade.price / 1000,
                             decimalPlaces: 2,
                           ),
                           style: TextStyle(
-                            color: FilterColorsFromTicker.getColor(
-                              viewModel.tickerData!.high24h,
-                              viewModel.tickerData!,
-                            ),
+                            color: color,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          FormatUtils.formatPrice(
+                            trade.change / 1000,
+                            decimalPlaces: 2,
+                          ),
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          '${trade.ratioChange.toStringAsFixed(2)}%',
+                          style: TextStyle(
+                            color: color,
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                           ),
@@ -159,7 +218,6 @@ class TradeHistorySection extends HookWidget {
                           textAlign: TextAlign.right,
                         ),
                       ),
-                      const SizedBox(width: 29),
                       Expanded(
                         flex: 3,
                         child: Text(
@@ -170,17 +228,6 @@ class TradeHistorySection extends HookWidget {
                                 : AppColors.priceDown,
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      Expanded(
-                        flex: 4,
-                        child: Text(
-                          DateFormat('HH:mm:ss').format(trade.dateTime),
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 11,
                           ),
                           textAlign: TextAlign.right,
                         ),
