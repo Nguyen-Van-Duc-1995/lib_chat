@@ -69,7 +69,7 @@ class TradeHistorySection extends HookWidget {
               Expanded(
                 flex: 4,
                 child: Text(
-                  'Giá',
+                  ' Giá',
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 11,
