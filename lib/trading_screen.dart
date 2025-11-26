@@ -28,7 +28,7 @@ class _TradingScreenState extends State<TradingScreen>
   void initState() {
     super.initState();
     // Giảm từ 3 còn 2
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
 
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
@@ -113,6 +113,7 @@ class _TradingScreenState extends State<TradingScreen>
             ),
             tabs: const [
               Tab(text: 'Lệnh khớp'),
+              Tab(text: 'Gộp khớp'),
               Tab(text: 'Thông tin'),
             ],
           ),
@@ -121,6 +122,7 @@ class _TradingScreenState extends State<TradingScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
+                TradeHistorySection(viewModel: viewModel),
                 TradeHistorySection(viewModel: viewModel),
                 MarketInfoSection(viewModel: viewModel),
               ],
