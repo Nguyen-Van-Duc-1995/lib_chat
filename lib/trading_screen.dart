@@ -123,7 +123,7 @@ class _TradingScreenState extends State<TradingScreen>
               controller: _tabController,
               children: [
                 TradeHistorySection(viewModel: viewModel),
-                TradeHistorySection(viewModel: viewModel),
+                TradeHistorySection(viewModel: viewModel, isGrouped: true),
                 MarketInfoSection(viewModel: viewModel),
               ],
             ),

@@ -9,7 +9,12 @@ import 'package:provider/provider.dart';
 
 class TradeHistorySection extends HookWidget {
   final TradingViewModel viewModel;
-  const TradeHistorySection({super.key, required this.viewModel});
+  final bool isGrouped;
+  const TradeHistorySection({
+    super.key,
+    required this.viewModel,
+    this.isGrouped = false,
+  });
 
   @override
   Widget build(BuildContext context) {
