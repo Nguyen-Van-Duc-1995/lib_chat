@@ -25,6 +25,12 @@ class TradeHistorySection extends HookWidget {
     // 👇 Biến trạng thái riêng để quản lý "đang load thêm"
     final isLoadingMore = useState(false);
 
+    useEffect(() {
+      viewModel.isGrouped = isGrouped;
+      viewModel.resetTrades();
+      return null;
+    }, []);
+
     // 👇 Lắng nghe khi cuộn đến gần cuối danh sách
     useEffect(() {
       Future<void> handleLoadMore() async {

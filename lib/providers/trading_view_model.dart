@@ -121,12 +121,19 @@ class TradingViewModel extends ChangeNotifier {
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
 
+  bool isGrouped = false;
+
   void handleSearchPressed(dynamic data) {
     if (onSearchPressed != null) {
       onSearchPressed!(data);
     } else {
       debugPrint("Search pressed - no callback assigned.");
     }
+  }
+
+  void resetTrades() {
+    _trades.clear();
+    _orderList();
   }
 
   void setSelectedTab(int index) {
@@ -139,10 +146,14 @@ class TradingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _orderList(String symbol) async {
+  void _orderList() async {
     try {
-      List<dynamic> orders = await OrderService.listOrdersServices(symbol);
+      List<dynamic> orders = await OrderService.listOrdersServices(
+        symbol,
+        isGrouped: isGrouped,
+      );
       _trades.addAll(orders.map((data) => TradeEntry.fromJson(data)).toList());
+      notifyListeners();
     } catch (e) {
       print('Lỗi khi lấy danh sách lệnh: $e');
     }
@@ -159,6 +170,7 @@ class TradingViewModel extends ChangeNotifier {
       List<dynamic> orders = await OrderService.listOrdersServices(
         symbol,
         lastId: lastId, // cần thêm param lastId trong OrderService
+        isGrouped: isGrouped,
       );
 
       final newTrades = orders
@@ -173,7 +185,7 @@ class TradingViewModel extends ChangeNotifier {
   }
 
   Future<void> _initialize() async {
-    _orderList(symbol);
+    // _orderList();
     _setLoading(true);
     await _fetchInitialData();
     _subscribeToStreams();

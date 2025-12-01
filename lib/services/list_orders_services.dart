@@ -8,10 +8,12 @@ class OrderService {
   static Future<List<dynamic>> listOrdersServices(
     String symbol, {
     String? lastId,
+    bool isGrouped = false,
   }) async {
     final queryParameters = {
       'symbol': symbol,
       'limit': '100',
+      'isGrouped': isGrouped ? '1' : '0',
       if (lastId != null) 'last_id': lastId,
     };
 
