@@ -383,13 +383,55 @@ class TradingViewModel extends ChangeNotifier {
           lowest = lowest == 1000000000
               ? data['LastPrice'].toDouble()
               : math.min(lowest, data['LastPrice'].toDouble());
-          try {
-            _trades.insert(0, TradeEntry.fromJson(data));
-            if (_trades.length > 1000) {
-              _trades = _trades.sublist(0, 1000);
-            }
-            notifyListeners();
-          } catch (e) {}
+          if (isGrouped) {
+            try {
+              final newTrade = TradeEntry.fromJson(data);
+
+              if (_trades.isNotEmpty) {
+                final last = _trades.first;
+
+                final diffMs = newTrade.updatedAt
+                    .difference(last.updatedAt)
+                    .inMilliseconds
+                    .abs();
+
+                final canMerge =
+                    diffMs <= 1000 && // <= 1 giây
+                    last.isBuyerMaker == newTrade.isBuyerMaker;
+
+                if (canMerge) {
+                  final merged = last.copyWith(
+                    price: newTrade.price,
+                    quantity: last.quantity + newTrade.quantity,
+                    change: newTrade.change,
+                    ratioChange: newTrade.ratioChange,
+                    updatedAt: newTrade.updatedAt,
+                  );
+
+                  _trades[0] = merged;
+                  notifyListeners();
+                  return;
+                }
+              }
+
+              // Không gộp được → thêm như bình thường
+              _trades.insert(0, newTrade);
+              if (_trades.length > 1000) {
+                _trades = _trades.sublist(0, 1000);
+              }
+
+              notifyListeners();
+            } catch (e) {}
+          } else {
+            try {
+              _trades.insert(0, TradeEntry.fromJson(data));
+              if (_trades.length > 1000) {
+                _trades = _trades.sublist(0, 1000);
+              }
+              notifyListeners();
+            } catch (e) {}
+          }
+
           try {
             final newKline = KlineData.fromJson({
               "TradingDate": data['TradingDate'],
