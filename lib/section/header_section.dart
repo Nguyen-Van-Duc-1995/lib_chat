@@ -168,7 +168,7 @@ class HeaderSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 28),
             child: Text(
-              'Ngân hàng TMCP Quân đội',
+              'Ngân hàng',
               style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ),
