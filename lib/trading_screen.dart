@@ -3,6 +3,7 @@ import 'package:chart/section/header_section.dart';
 import 'package:chart/section/market_info_section.dart';
 import 'package:chart/section/trade_history_section.dart';
 import 'package:chart/widget/action_buttons.dart';
+import 'package:chart/widget/buy_sell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart' show Provider;
@@ -117,6 +118,8 @@ class _TradingScreenState extends State<TradingScreen>
               Tab(text: 'Thông tin'),
             ],
           ),
+          SizedBox(height: 8),
+          BuySellBar(buyPercent: 62.5, sellPercent: 37.5),
           SizedBox(
             height: isLandscape ? 220 : 250,
             child: TabBarView(
