@@ -6,10 +6,15 @@ class TickerData {
   final double volume24h;
   final double high24h;
   final double low24h;
+
   double ceiling;
   double floor;
   double avgPrice;
   double refPrice;
+
+  // ✅ thêm
+  double totalBU;
+  double totalSD;
 
   TickerData({
     required this.symbol,
@@ -23,6 +28,8 @@ class TickerData {
     this.floor = 0.0,
     this.avgPrice = 0.0,
     this.refPrice = 0.0,
+    this.totalBU = 0.0, // ✅
+    this.totalSD = 0.0, // ✅
   });
 
   /// Mapping từ Binance (giữ nguyên)
@@ -35,6 +42,8 @@ class TickerData {
       volume24h: double.parse(ticker['volume']),
       high24h: double.parse(ticker['highPrice']),
       low24h: double.parse(ticker['lowPrice']),
+      totalBU: 0.0, // ✅ Binance không có
+      totalSD: 0.0, // ✅
     );
   }
 
@@ -52,6 +61,10 @@ class TickerData {
       floor: ((data['Floor'] ?? 0)).toDouble(),
       avgPrice: ((data['AvgPrice'] ?? 0)).toDouble(),
       refPrice: ((data['RefPrice'] ?? 0)).toDouble(),
+
+      // ✅ bổ sung giống LastPrice
+      totalBU: ((data['totalBU'] ?? 0)).toDouble(),
+      totalSD: ((data['totalSD'] ?? 0)).toDouble(),
     );
   }
 }

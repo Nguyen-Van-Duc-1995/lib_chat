@@ -119,7 +119,10 @@ class _TradingScreenState extends State<TradingScreen>
             ],
           ),
           SizedBox(height: 8),
-          BuySellBar(buyPercent: 62.5, sellPercent: 37.5),
+          BuySellBar(
+            buyPercent: viewModel.latestTrade?.totalBU ?? 1,
+            sellPercent: viewModel.latestTrade?.totalSD ?? 1,
+          ),
           SizedBox(
             height: isLandscape ? 220 : 250,
             child: TabBarView(

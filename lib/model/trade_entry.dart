@@ -6,6 +6,11 @@ class TradeEntry {
   final bool isBuyerMaker;
   final double change;
   final double ratioChange;
+
+  // ✅ thêm
+  final double totalBU;
+  final double totalSD;
+
   final DateTime updatedAt;
 
   DateTime get dateTime => DateTime.fromMillisecondsSinceEpoch(time);
@@ -18,6 +23,8 @@ class TradeEntry {
     required this.isBuyerMaker,
     this.change = 0.0,
     this.ratioChange = 0.0,
+    this.totalBU = 1.0, // ✅
+    this.totalSD = 1.0, // ✅
     DateTime? updatedAt,
   }) : updatedAt = updatedAt ?? DateTime.now();
 
@@ -30,6 +37,8 @@ class TradeEntry {
       isBuyerMaker: trade['m'],
       change: 0.0,
       ratioChange: 0.0,
+      totalBU: 1.0, // ✅
+      totalSD: 1.0, // ✅
       updatedAt: DateTime.now(),
     );
   }
@@ -66,6 +75,11 @@ class TradeEntry {
       isBuyerMaker: (json['Side'] == 'BU'),
       change: (json['Change'] as num?)?.toDouble() ?? 0.0,
       ratioChange: (json['RatioChange'] as num?)?.toDouble() ?? 0.0,
+
+      // ✅ parse giống LastPrice
+      totalBU: (json['totalBU'] as num?)?.toDouble() ?? 1.0,
+      totalSD: (json['totalSD'] as num?)?.toDouble() ?? 1.0,
+
       updatedAt: DateTime.now(),
     );
   }
@@ -78,6 +92,8 @@ class TradeEntry {
     bool? isBuyerMaker,
     double? change,
     double? ratioChange,
+    double? totalBU, // ✅
+    double? totalSD, // ✅
     DateTime? updatedAt,
   }) {
     return TradeEntry(
@@ -88,6 +104,8 @@ class TradeEntry {
       isBuyerMaker: isBuyerMaker ?? this.isBuyerMaker,
       change: change ?? this.change,
       ratioChange: ratioChange ?? this.ratioChange,
+      totalBU: totalBU ?? this.totalBU, // ✅
+      totalSD: totalSD ?? this.totalSD, // ✅
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }

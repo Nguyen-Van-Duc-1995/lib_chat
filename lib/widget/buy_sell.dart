@@ -12,6 +12,9 @@ class BuySellBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(
+      'BuySellBar build with buyPercent: $buyPercent, sellPercent: $sellPercent',
+    );
     final total = buyPercent + sellPercent;
     final buyFlex = (buyPercent / total * 100).round();
     final sellFlex = 100 - buyFlex;

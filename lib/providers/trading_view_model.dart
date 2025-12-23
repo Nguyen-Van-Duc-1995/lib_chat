@@ -79,6 +79,7 @@ class TradingViewModel extends ChangeNotifier {
 
   List<TradeEntry> _trades = [];
   List<TradeEntry> get trades => _trades;
+  TradeEntry? get latestTrade => trades.isNotEmpty ? _trades.first : null;
 
   List<KlineData> _klines = [];
   List<KlineData> get klines => _klines;
