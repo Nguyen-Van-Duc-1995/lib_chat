@@ -56,11 +56,11 @@ class BuySellBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Mua ${buyPercent.toStringAsFixed(1)}%",
+              "Mua ${buyFlex.toStringAsFixed(1)}%",
               style: const TextStyle(color: Colors.green),
             ),
             Text(
-              "Bán ${sellPercent.toStringAsFixed(1)}%",
+              "Bán ${sellFlex.toStringAsFixed(1)}%",
               style: const TextStyle(color: Colors.red),
             ),
           ],
