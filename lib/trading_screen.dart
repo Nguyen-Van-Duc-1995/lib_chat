@@ -108,6 +108,7 @@ class _TradingScreenState extends State<TradingScreen>
             indicatorWeight: 3,
             labelColor: AppColors.textPrimary,
             unselectedLabelColor: AppColors.textSecondary,
+            dividerColor: AppColors.border,
             labelStyle: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -119,10 +120,11 @@ class _TradingScreenState extends State<TradingScreen>
             ],
           ),
           SizedBox(height: 8),
-          BuySellBar(
-            buyPercent: viewModel.latestTrade?.totalBU ?? 1,
-            sellPercent: viewModel.latestTrade?.totalSD ?? 1,
-          ),
+          if (_tabController.index != 2)
+            BuySellBar(
+              buyPercent: viewModel.latestTrade?.totalBU ?? 1,
+              sellPercent: viewModel.latestTrade?.totalSD ?? 1,
+            ),
           SizedBox(
             height: isLandscape ? 220 : 250,
             child: TabBarView(
