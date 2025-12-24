@@ -1,3 +1,4 @@
+import 'package:chart/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class BuySellBar extends StatelessWidget {
@@ -23,14 +24,14 @@ class BuySellBar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: 9,
+          height: 6,
           child: Row(
             children: [
               Expanded(
                 flex: buyFlex,
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: Colors.green,
+                    color: AppColors.increaseColor,
                     borderRadius: BorderRadius.horizontal(
                       left: Radius.circular(8),
                     ),
@@ -41,7 +42,7 @@ class BuySellBar extends StatelessWidget {
                 flex: sellFlex,
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: Colors.red,
+                    color: AppColors.decreaseColor,
                     borderRadius: BorderRadius.horizontal(
                       right: Radius.circular(8),
                     ),
@@ -56,12 +57,18 @@ class BuySellBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Mua ${buyFlex.toStringAsFixed(1)}%",
-              style: const TextStyle(color: Colors.green),
+              "Mua: ${buyFlex.toStringAsFixed(1)}%",
+              style: const TextStyle(
+                color: AppColors.increaseColor,
+                fontSize: 11,
+              ),
             ),
             Text(
-              "Bán ${sellFlex.toStringAsFixed(1)}%",
-              style: const TextStyle(color: Colors.red),
+              "Bán: ${sellFlex.toStringAsFixed(1)}%",
+              style: const TextStyle(
+                color: AppColors.decreaseColor,
+                fontSize: 11,
+              ),
             ),
           ],
         ),
