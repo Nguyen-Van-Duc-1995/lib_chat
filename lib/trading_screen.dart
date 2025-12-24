@@ -121,10 +121,7 @@ class _TradingScreenState extends State<TradingScreen>
           ),
           SizedBox(height: 8),
           if (_tabController.index != 2)
-            BuySellBar(
-              buyPercent: viewModel.latestTrade?.totalBU ?? 1,
-              sellPercent: viewModel.latestTrade?.totalSD ?? 1,
-            ),
+            BuySellBar(buy: viewModel.latestTrade, sell: viewModel.latestTrade),
           SizedBox(
             height: isLandscape ? 220 : 250,
             child: TabBarView(

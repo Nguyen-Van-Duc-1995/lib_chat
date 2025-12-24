@@ -1,23 +1,22 @@
+import 'package:chart/model/trade_entry.dart';
 import 'package:chart/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class BuySellBar extends StatelessWidget {
-  final double buyPercent; // 0 → 100
-  final double sellPercent; // 0 → 100
+  final TradeEntry? buy;
+  final TradeEntry? sell;
 
-  const BuySellBar({
-    super.key,
-    required this.buyPercent,
-    required this.sellPercent,
-  });
+  const BuySellBar({super.key, required this.buy, required this.sell});
 
   @override
   Widget build(BuildContext context) {
-    print(
-      'BuySellBar build with buyPercent: $buyPercent, sellPercent: $sellPercent',
-    );
-    final total = buyPercent + sellPercent;
-    final buyFlex = (buyPercent / total * 100).round();
+    final buyValue = buy?.totalBU ?? 0;
+    final sellValue = sell?.totalSD ?? 0;
+
+    final total = buyValue + sellValue;
+
+    // tránh chia 0
+    final buyFlex = total == 0 ? 50 : ((buyValue / total) * 100).round();
     final sellFlex = 100 - buyFlex;
 
     return Column(
