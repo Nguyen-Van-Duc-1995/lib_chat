@@ -1,6 +1,7 @@
 import 'package:chart/model/trade_entry.dart';
 import 'package:chart/utils/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class BuySellBar extends StatelessWidget {
   final TradeEntry? buy;
@@ -12,7 +13,7 @@ class BuySellBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final buyValue = buy?.totalBU ?? 0;
     final sellValue = sell?.totalSD ?? 0;
-
+    final numberFormat = NumberFormat('#,###.##');
     final total = buyValue + sellValue;
 
     // tránh chia 0
@@ -22,6 +23,25 @@ class BuySellBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              numberFormat.format(buy?.totalBU),
+              style: const TextStyle(
+                color: AppColors.increaseColor,
+                fontSize: 11,
+              ),
+            ),
+            Text(
+              numberFormat.format(buy?.totalSD),
+              style: const TextStyle(
+                color: AppColors.decreaseColor,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
         SizedBox(
           height: 6,
           child: Row(
