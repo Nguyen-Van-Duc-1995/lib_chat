@@ -62,6 +62,7 @@ class _TradingScreenState extends State<TradingScreen>
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<TradingViewModel>(context);
+    final heightS = MediaQuery.of(context).size.height;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       viewModel.updateSymbol(widget.symbol);
     });
@@ -123,7 +124,7 @@ class _TradingScreenState extends State<TradingScreen>
           if (_tabController.index != 2)
             BuySellBar(buy: viewModel.latestTrade, sell: viewModel.latestTrade),
           SizedBox(
-            height: isLandscape ? 220 : 250,
+            height: isLandscape ? heightS : heightS * 0.5,
             child: TabBarView(
               controller: _tabController,
               children: [
