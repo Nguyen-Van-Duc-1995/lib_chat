@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:chart/model/kline_data.dart';
 import 'package:chart/utils/format.dart';
@@ -18,18 +19,19 @@ mixin DrawCurrentPriceMixin {
     if (klines.isEmpty) return;
 
     final lastCandle = klines.last;
-    final double candleWidthWithSpacing = candleWidth + spacing;
-    final int lastIndex = klines.length - 1;
-    final double x = lastIndex * candleWidthWithSpacing - scrollX + spacing / 2;
-
-    if (x + candleWidth < 0 || x > size.width) return;
-
     final double price = lastCandle.close;
-    final double y = priceToY(price, chartHeight);
+    double y = priceToY(price, chartHeight);
+    y = y.clamp(0.0, chartHeight);
     final bool isBullish = lastCandle.close >= lastCandle.open;
     final Color priceColor = isBullish
         ? AppColors.priceUp
         : AppColors.priceDown;
+
+    final Paint dashedPaint = Paint()
+      ..color = priceColor
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke;
+    _drawDashedLine(canvas, Offset(0, y), Offset(size.width, y), dashedPaint);
 
     final textStyle = const TextStyle(
       color: Colors.white,
@@ -43,26 +45,17 @@ mixin DrawCurrentPriceMixin {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    const double lineLength = 4;
     const double paddingH = 4;
     const double paddingV = 1;
 
-    final double rectLeft = x + candleWidth / 2 + lineLength + 2;
+    final double rectRight = size.width - 4;
+    final double rectLeft = rectRight - tp.width - paddingH * 2;
     final double rectTop = y - tp.height / 2 - paddingV;
-    final double rectRight = rectLeft + tp.width + paddingH * 2;
     final double rectBottom = y + tp.height / 2 + paddingV;
 
     final RRect backgroundRect = RRect.fromRectAndRadius(
       Rect.fromLTRB(rectLeft, rectTop, rectRight, rectBottom),
       const Radius.circular(4),
-    );
-
-    canvas.drawLine(
-      Offset(x + candleWidth / 2, y),
-      Offset(x + candleWidth / 2 + lineLength, y),
-      Paint()
-        ..color = Colors.white
-        ..strokeWidth = 1,
     );
 
     canvas.drawRRect(
@@ -71,5 +64,31 @@ mixin DrawCurrentPriceMixin {
     );
 
     tp.paint(canvas, Offset(rectLeft + paddingH, y - tp.height / 2));
+  }
+
+  void _drawDashedLine(
+    Canvas canvas,
+    Offset start,
+    Offset end,
+    Paint paint, {
+    double dashWidth = 5,
+    double gapWidth = 4,
+  }) {
+    final dx = end.dx - start.dx;
+    final dy = end.dy - start.dy;
+    final distance = math.sqrt(dx * dx + dy * dy);
+    final dashCount = distance / (dashWidth + gapWidth);
+    final xStep = dx / dashCount;
+    final yStep = dy / dashCount;
+    double currentX = start.dx;
+    double currentY = start.dy;
+
+    for (int i = 0; i < dashCount; i++) {
+      final xEnd = currentX + xStep * (dashWidth / (dashWidth + gapWidth));
+      final yEnd = currentY + yStep * (dashWidth / (dashWidth + gapWidth));
+      canvas.drawLine(Offset(currentX, currentY), Offset(xEnd, yEnd), paint);
+      currentX += xStep;
+      currentY += yStep;
+    }
   }
 }
