@@ -371,12 +371,7 @@ mixin DrawVolumeMixin {
       volumeTopY + volumeAreaHeight - currentBoxHeight,
     );
 
-    final double currentX =
-        safeIndex * (candleWidth + spacing) -
-        scrollX +
-        spacing / 2 +
-        candleWidth +
-        2;
+    final double currentX = size.width + rightOffset;
 
     final RRect currentRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(currentX, currentY, currentBoxWidth, currentBoxHeight),
@@ -406,31 +401,63 @@ mixin DrawVolumeMixin {
     required double volumeTopY,
   }) {
     if (klines.isEmpty) return;
+
     final double candleWidthWithSpacing = candleWidth + spacing;
     final int lastVisibleIndex =
         ((scrollX + size.width) / candleWidthWithSpacing).floor();
     final int safeIndex = lastVisibleIndex.clamp(0, klines.length - 1);
+
     final volumes = klines.map((e) => e.volume).toList(growable: false);
     final ma20 = _calculateSMA(volumes, ma20Period);
     final ma50 = _calculateSMA(volumes, ma50Period);
+
     String v20 = '-';
     String v50 = '-';
+
     if (safeIndex >= ma20Period - 1 && ma20[safeIndex] != null) {
       v20 = _formatVolume(ma20[safeIndex]!);
     }
     if (safeIndex >= ma50Period - 1 && ma50[safeIndex] != null) {
       v50 = _formatVolume(ma50[safeIndex]!);
     }
+
+    // Màu chữ theo đúng màu đường MA
+    final Color ma20Color = Colors.yellow.withOpacity(0.9);
+    final Color ma50Color = Colors.purpleAccent.withOpacity(0.9);
+    final Color sepColor = Colors.white.withOpacity(0.85);
+
     final textSpan = TextSpan(
-      text: 'MA20: $v20    MA50: $v50',
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 9,
-        fontWeight: FontWeight.w300,
-      ),
+      children: [
+        TextSpan(
+          text: 'MA20: $v20',
+          style: TextStyle(
+            color: ma20Color,
+            fontSize: 9,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+        TextSpan(
+          text: '    ',
+          style: TextStyle(
+            color: sepColor,
+            fontSize: 9,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+        TextSpan(
+          text: 'MA50: $v50',
+          style: TextStyle(
+            color: ma50Color,
+            fontSize: 9,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+      ],
     );
+
     final tp = TextPainter(text: textSpan, textDirection: ui.TextDirection.ltr)
       ..layout();
+
     tp.paint(canvas, Offset(6, volumeTopY + 2));
   }
 }
