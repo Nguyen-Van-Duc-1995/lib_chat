@@ -25,6 +25,22 @@ class IndicatorCalculator {
     return ema;
   }
 
+  static List<double> calculateSMA(List<double> values, int period) {
+    if (values.length < period) return [];
+    List<double> sma = [];
+    double sum = 0;
+    for (int i = 0; i < values.length; i++) {
+      sum += values[i];
+      if (i >= period) {
+        sum -= values[i - period];
+      }
+      if (i >= period - 1) {
+        sma.add(sum / period);
+      }
+    }
+    return sma;
+  }
+
   static List<double> calculateRSI(List<double> closes, int period) {
     if (closes.length < period) return [];
 

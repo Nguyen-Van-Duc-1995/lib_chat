@@ -16,6 +16,109 @@ mixin DrawVolumeMixin {
     }
   }
 
+  List<double?> _calculateSMA(List<double> data, int period) {
+    final result = List<double?>.filled(data.length, null);
+    if (period <= 0 || data.isEmpty) return result;
+
+    double sum = 0.0;
+    for (int i = 0; i < data.length; i++) {
+      sum += data[i];
+      if (i >= period) sum -= data[i - period];
+      if (i >= period - 1) {
+        result[i] = sum / period;
+      }
+    }
+    return result;
+  }
+
+  void _drawVolumeMALines({
+    required Canvas canvas,
+    required Size size,
+    required List<KlineData> klines,
+    required double scrollX,
+    required double candleWidth,
+    required double spacing,
+    required double maxVolume,
+    required double volumeAreaHeight,
+    required double volumeTopY,
+    int ma20Period = 20,
+    int ma50Period = 50,
+    double strokeWidth = 1.2,
+    bool showVolumeMA = true,
+  }) {
+    if (!showVolumeMA) return;
+    if (klines.isEmpty || maxVolume <= 0) return;
+
+    final double candleWidthWithSpacing = candleWidth + spacing;
+
+    final int visibleStartIndex = (scrollX / candleWidthWithSpacing)
+        .floor()
+        .clamp(0, klines.length - 1);
+    final int visibleEndIndex =
+        ((scrollX + size.width) / candleWidthWithSpacing).ceil().clamp(
+          0,
+          klines.length - 1,
+        );
+
+    if (visibleEndIndex < visibleStartIndex) return;
+
+    final volumes = klines.map((e) => e.volume).toList(growable: false);
+
+    final ma20 = _calculateSMA(volumes, ma20Period);
+    final ma50 = _calculateSMA(volumes, ma50Period);
+
+    double volumeToY(double v) {
+      // Giữ đúng cách scale cột volume đang dùng: * 0.9
+      final barHeight = (v / (maxVolume + 1e-9)) * volumeAreaHeight * 0.9;
+      return volumeTopY + volumeAreaHeight - barHeight;
+    }
+
+    final ma20Paint = Paint()
+      ..color = Colors.yellow.withOpacity(0.9)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final ma50Paint = Paint()
+      ..color = Colors.purpleAccent.withOpacity(0.9)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    void drawPath(List<double?> ma, Paint paint) {
+      final path = Path();
+      bool started = false;
+
+      for (int i = visibleStartIndex; i <= visibleEndIndex; i++) {
+        final v = ma[i];
+        if (v == null) continue;
+
+        final x =
+            i * candleWidthWithSpacing -
+            scrollX +
+            spacing / 2 +
+            candleWidth / 2;
+        final y = volumeToY(v);
+
+        if (!started) {
+          path.moveTo(x, y);
+          started = true;
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+
+      if (started) {
+        canvas.drawPath(path, paint);
+      }
+    }
+
+    drawPath(ma20, ma20Paint);
+    drawPath(ma50, ma50Paint);
+  }
+
   void drawVolumeBars({
     required Canvas canvas,
     required Size size,
@@ -28,6 +131,11 @@ mixin DrawVolumeMixin {
     required double volumeTopY,
     int? hoveredIndex,
     double? priceChartHeight,
+
+    bool showVolumeMA = true,
+    int ma20Period = 20,
+    int ma50Period = 50,
+    double maStrokeWidth = 0.5,
   }) {
     _drawVolumeGrid(
       canvas: canvas,
@@ -51,10 +159,9 @@ mixin DrawVolumeMixin {
           (kline.volume / (maxVolume + 1e-9)) * volumeAreaHeight * 0.9;
       final bool isBullish = kline.close >= kline.open;
 
-      final volumePaint =
-          Paint()
-            ..color = (isBullish ? AppColors.priceUp : AppColors.priceDown)
-                .withOpacity(0.3);
+      final volumePaint = Paint()
+        ..color = (isBullish ? AppColors.priceUp : AppColors.priceDown)
+            .withOpacity(0.3);
 
       canvas.drawRect(
         Rect.fromLTRB(
@@ -67,18 +174,12 @@ mixin DrawVolumeMixin {
       );
 
       // Update visible volume range
-      minVisibleVolume =
-          minVisibleVolume == null
-              ? kline.volume
-              : (kline.volume < minVisibleVolume
-                  ? kline.volume
-                  : minVisibleVolume);
-      maxVisibleVolume =
-          maxVisibleVolume == null
-              ? kline.volume
-              : (kline.volume > maxVisibleVolume
-                  ? kline.volume
-                  : maxVisibleVolume);
+      minVisibleVolume = minVisibleVolume == null
+          ? kline.volume
+          : (kline.volume < minVisibleVolume ? kline.volume : minVisibleVolume);
+      maxVisibleVolume = maxVisibleVolume == null
+          ? kline.volume
+          : (kline.volume > maxVisibleVolume ? kline.volume : maxVisibleVolume);
 
       // Draw hover information
       if (hoveredIndex != null &&
@@ -87,6 +188,22 @@ mixin DrawVolumeMixin {
         _drawHoverVolumeInfo(canvas, kline.volume, priceChartHeight);
       }
     }
+
+    _drawVolumeMALines(
+      canvas: canvas,
+      size: size,
+      klines: klines,
+      scrollX: scrollX,
+      candleWidth: candleWidth,
+      spacing: spacing,
+      maxVolume: maxVolume,
+      volumeAreaHeight: volumeAreaHeight,
+      volumeTopY: volumeTopY,
+      ma20Period: ma20Period,
+      ma50Period: ma50Period,
+      strokeWidth: maStrokeWidth,
+      showVolumeMA: showVolumeMA,
+    );
 
     // Draw volume labels
     if (maxVisibleVolume != null && minVisibleVolume != null) {
@@ -103,6 +220,18 @@ mixin DrawVolumeMixin {
         spacing: spacing,
       );
     }
+
+    _drawVolumeMALabelTopLeft(
+      canvas: canvas,
+      size: size,
+      klines: klines,
+      scrollX: scrollX,
+      candleWidth: candleWidth,
+      spacing: spacing,
+      ma20Period: ma20Period,
+      ma50Period: ma50Period,
+      volumeTopY: volumeTopY,
+    );
   }
 
   void _drawVolumeGrid({
@@ -112,10 +241,9 @@ mixin DrawVolumeMixin {
     required double volumeAreaHeight,
     required List<KlineData> klines,
   }) {
-    final gridPaint =
-        Paint()
-          ..color = AppColors.gridLine.withOpacity(0.2)
-          ..strokeWidth = 0.5;
+    final gridPaint = Paint()
+      ..color = AppColors.gridLine.withOpacity(0.2)
+      ..strokeWidth = 0.5;
 
     // Draw horizontal grid line
     const int horizontalLines = 1;
@@ -192,6 +320,7 @@ mixin DrawVolumeMixin {
         radius,
       );
 
+      // (rect đang không vẽ background trong code gốc, giữ nguyên không đổi)
       textPainter.paint(canvas, Offset(x + padding, y + padding));
     }
 
@@ -263,5 +392,45 @@ mixin DrawVolumeMixin {
       canvas,
       Offset(currentX + currentPaddingX, currentY + currentPaddingY),
     );
+  }
+
+  void _drawVolumeMALabelTopLeft({
+    required Canvas canvas,
+    required Size size,
+    required List<KlineData> klines,
+    required double scrollX,
+    required double candleWidth,
+    required double spacing,
+    required int ma20Period,
+    required int ma50Period,
+    required double volumeTopY,
+  }) {
+    if (klines.isEmpty) return;
+    final double candleWidthWithSpacing = candleWidth + spacing;
+    final int lastVisibleIndex =
+        ((scrollX + size.width) / candleWidthWithSpacing).floor();
+    final int safeIndex = lastVisibleIndex.clamp(0, klines.length - 1);
+    final volumes = klines.map((e) => e.volume).toList(growable: false);
+    final ma20 = _calculateSMA(volumes, ma20Period);
+    final ma50 = _calculateSMA(volumes, ma50Period);
+    String v20 = '-';
+    String v50 = '-';
+    if (safeIndex >= ma20Period - 1 && ma20[safeIndex] != null) {
+      v20 = _formatVolume(ma20[safeIndex]!);
+    }
+    if (safeIndex >= ma50Period - 1 && ma50[safeIndex] != null) {
+      v50 = _formatVolume(ma50[safeIndex]!);
+    }
+    final textSpan = TextSpan(
+      text: 'MA20: $v20    MA50: $v50',
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 9,
+        fontWeight: FontWeight.w300,
+      ),
+    );
+    final tp = TextPainter(text: textSpan, textDirection: ui.TextDirection.ltr)
+      ..layout();
+    tp.paint(canvas, Offset(6, volumeTopY + 2));
   }
 }
