@@ -29,9 +29,16 @@ mixin DrawCurrentPriceMixin {
 
     final Paint dashedPaint = Paint()
       ..color = priceColor
-      ..strokeWidth = 1.2
+      ..strokeWidth = 0.6
       ..style = PaintingStyle.stroke;
-    _drawDashedLine(canvas, Offset(0, y), Offset(size.width, y), dashedPaint);
+    _drawDashedLine(
+      canvas,
+      Offset(0, y),
+      Offset(size.width, y),
+      dashedPaint,
+      dashWidth: 2,
+      gapWidth: 4,
+    );
 
     final textStyle = const TextStyle(
       color: Colors.white,
@@ -48,7 +55,7 @@ mixin DrawCurrentPriceMixin {
     const double paddingH = 4;
     const double paddingV = 1;
 
-    final double rectRight = size.width - 4;
+    final double rectRight = size.width + 35;
     final double rectLeft = rectRight - tp.width - paddingH * 2;
     final double rectTop = y - tp.height / 2 - paddingV;
     final double rectBottom = y + tp.height / 2 + paddingV;
