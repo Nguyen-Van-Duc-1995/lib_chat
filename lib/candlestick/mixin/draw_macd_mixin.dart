@@ -773,7 +773,8 @@ mixin DrawMACDMixin {
     // X: sát mép phải
     // ============================================================
 
-    final double x = size.width - boxWidth;
+    const double rightShift = 35.0;
+    final double x = size.width - boxWidth + rightShift;
 
     // ============================================================
     // Y
