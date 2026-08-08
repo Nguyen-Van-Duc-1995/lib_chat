@@ -187,7 +187,7 @@ class CandlestickPainter extends CustomPainter
         klines: klines,
         chartHeight: actualChartHeight,
         period: 20,
-        color: AppColors.accentYellow.withOpacity(0.8),
+        color: AppColors.accentYellow.withValues(alpha: 0.8),
         candleWidthWithSpacing: candleWidthWithSpacing,
         scrollX: scrollX,
         priceToY: _priceToY,
@@ -200,7 +200,7 @@ class CandlestickPainter extends CustomPainter
         klines: klines,
         chartHeight: actualChartHeight,
         period: 50,
-        color: Colors.purpleAccent.withOpacity(0.8),
+        color: Colors.purpleAccent.withValues(alpha: 0.8),
         candleWidthWithSpacing: candleWidthWithSpacing,
         scrollX: scrollX,
         priceToY: _priceToY,
@@ -327,7 +327,7 @@ class CandlestickPainter extends CustomPainter
     if (x < 0 || x > size.width) return;
 
     final Paint linePaint = Paint()
-      ..color = Colors.white.withOpacity(0.4)
+      ..color = Colors.white.withValues(alpha: 0.4)
       ..strokeWidth = 1;
 
     canvas.drawLine(
@@ -368,7 +368,7 @@ class CandlestickPainter extends CustomPainter
   // Và cập nhật hàm _drawGrid để sử dụng grid steps chính xác
   void _drawGrid(Canvas canvas, Size size, double chartHeight) {
     final gridPaint = Paint()
-      ..color = AppColors.gridLine.withOpacity(0.5)
+      ..color = AppColors.gridLine.withValues(alpha: 0.5)
       ..strokeWidth = 0.5;
 
     // Horizontal lines - sử dụng price-based grid

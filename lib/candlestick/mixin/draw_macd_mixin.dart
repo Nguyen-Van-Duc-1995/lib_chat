@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:chart/model/kline_data.dart';
@@ -18,35 +19,53 @@ mixin DrawMACDMixin {
   }) {
     if (klines.isEmpty) return;
 
+    // ============================================================
+    // CALCULATE MACD
+    // ============================================================
+
     final MACDData macdData = IndicatorCalculator.calculateMACD(klines);
 
-    final macdLine = macdData.macdLine;
-    final signalLine = macdData.signalLine;
-    final histogram = macdData.histogram;
+    final List<IndicatorPoint> macdLine = macdData.macdLine;
+
+    final List<IndicatorPoint> signalLine = macdData.signalLine;
+
+    final List<IndicatorPoint> histogram = macdData.histogram;
 
     if (macdLine.isEmpty || signalLine.isEmpty || histogram.isEmpty) {
       return;
     }
 
+    // ============================================================
+    // CANDLE WIDTH
+    // ============================================================
+
     final double candleWidthWithSpacing = candleWidth + spacing;
 
     // ============================================================
-    // VÙNG CANDLE ĐANG HIỂN THỊ
-    // Làm tương tự DrawVolumeProfileMixin
+    // VISIBLE RANGE
+    //
+    // Tương tự Volume:
+    // chỉ quan tâm candle đang nằm trên màn hình.
     // ============================================================
 
-    final int visibleStartIndex = (scrollX / candleWidthWithSpacing)
-        .floor()
-        .clamp(0, klines.length - 1);
+    final int rawStartIndex = (scrollX / candleWidthWithSpacing).floor();
 
-    final int visibleEndIndex =
-        ((scrollX + size.width) / candleWidthWithSpacing).ceil().clamp(
-          0,
-          klines.length - 1,
-        );
+    final int rawEndIndex = ((scrollX + size.width) / candleWidthWithSpacing)
+        .ceil();
+
+    final int visibleStartIndex = max(0, min(klines.length - 1, rawStartIndex));
+
+    final int visibleEndIndex = max(0, min(klines.length - 1, rawEndIndex));
+
+    if (visibleEndIndex < visibleStartIndex) {
+      return;
+    }
 
     // ============================================================
     // MAP DateTime -> candle index
+    //
+    // Lookup O(1)
+    // Không dùng indexWhere trong vòng loop.
     // ============================================================
 
     final Map<DateTime, int> candleIndexByTime = {
@@ -54,84 +73,151 @@ mixin DrawMACDMixin {
     };
 
     // ============================================================
-    // Lấy MACD data nằm trong vùng visible
+    // TÌM MIN / MAX VISIBLE
+    //
+    // Scale MACD theo khu vực đang hiển thị.
+    // Đồng thời lấy giá trị cuối cùng visible để hiện label.
     // ============================================================
 
-    final List<IndicatorPoint> visibleMACD = [];
-    final List<IndicatorPoint> visibleSignal = [];
-    final List<IndicatorPoint> visibleHistogram = [];
+    double maxV = 0.0;
+    double minV = 0.0;
 
-    for (final point in macdLine) {
-      final int? index = candleIndexByTime[point.time];
+    bool hasVisibleData = false;
 
-      if (index == null) continue;
+    double? currentMACD;
+    double? currentSignal;
+    double? currentHistogram;
 
-      if (index >= visibleStartIndex && index <= visibleEndIndex) {
-        visibleMACD.add(point);
+    int currentMACDIndex = -1;
+    int currentSignalIndex = -1;
+    int currentHistogramIndex = -1;
+
+    // ------------------------------------------------------------
+    // MACD
+    // ------------------------------------------------------------
+
+    for (final IndicatorPoint point in macdLine) {
+      final int? candleIndex = candleIndexByTime[point.time];
+
+      if (candleIndex == null) {
+        continue;
+      }
+
+      if (candleIndex < visibleStartIndex || candleIndex > visibleEndIndex) {
+        continue;
+      }
+
+      hasVisibleData = true;
+
+      if (point.value > maxV) {
+        maxV = point.value;
+      }
+
+      if (point.value < minV) {
+        minV = point.value;
+      }
+
+      // Candle bên phải nhất đang visible
+      if (candleIndex >= currentMACDIndex) {
+        currentMACDIndex = candleIndex;
+        currentMACD = point.value;
       }
     }
 
-    for (final point in signalLine) {
-      final int? index = candleIndexByTime[point.time];
+    // ------------------------------------------------------------
+    // SIGNAL
+    // ------------------------------------------------------------
 
-      if (index == null) continue;
+    for (final IndicatorPoint point in signalLine) {
+      final int? candleIndex = candleIndexByTime[point.time];
 
-      if (index >= visibleStartIndex && index <= visibleEndIndex) {
-        visibleSignal.add(point);
+      if (candleIndex == null) {
+        continue;
+      }
+
+      if (candleIndex < visibleStartIndex || candleIndex > visibleEndIndex) {
+        continue;
+      }
+
+      hasVisibleData = true;
+
+      if (point.value > maxV) {
+        maxV = point.value;
+      }
+
+      if (point.value < minV) {
+        minV = point.value;
+      }
+
+      if (candleIndex >= currentSignalIndex) {
+        currentSignalIndex = candleIndex;
+        currentSignal = point.value;
       }
     }
 
-    for (final point in histogram) {
-      final int? index = candleIndexByTime[point.time];
+    // ------------------------------------------------------------
+    // HISTOGRAM
+    // ------------------------------------------------------------
 
-      if (index == null) continue;
+    for (final IndicatorPoint point in histogram) {
+      final int? candleIndex = candleIndexByTime[point.time];
 
-      if (index >= visibleStartIndex && index <= visibleEndIndex) {
-        visibleHistogram.add(point);
+      if (candleIndex == null) {
+        continue;
+      }
+
+      if (candleIndex < visibleStartIndex || candleIndex > visibleEndIndex) {
+        continue;
+      }
+
+      hasVisibleData = true;
+
+      if (point.value > maxV) {
+        maxV = point.value;
+      }
+
+      if (point.value < minV) {
+        minV = point.value;
+      }
+
+      if (candleIndex >= currentHistogramIndex) {
+        currentHistogramIndex = candleIndex;
+        currentHistogram = point.value;
       }
     }
 
-    if (visibleMACD.isEmpty ||
-        visibleSignal.isEmpty ||
-        visibleHistogram.isEmpty) {
+    if (!hasVisibleData) {
       return;
     }
 
     // ============================================================
-    // TÍNH MIN / MAX THEO VÙNG VISIBLE
+    // SCALE PADDING
+    //
+    // Zero luôn nằm trong chart vì maxV/minV bắt đầu từ 0.
     // ============================================================
 
-    double maxV = 0;
-    double minV = 0;
-
-    for (final point in visibleMACD) {
-      maxV = max(maxV, point.value);
-      minV = min(minV, point.value);
-    }
-
-    for (final point in visibleSignal) {
-      maxV = max(maxV, point.value);
-      minV = min(minV, point.value);
-    }
-
-    for (final point in visibleHistogram) {
-      maxV = max(maxV, point.value);
-      minV = min(minV, point.value);
-    }
-
-    // Thêm khoảng trống trên/dưới.
     double range = maxV - minV;
 
-    if (range.abs() < 0.000001) {
+    if (range.abs() < 1e-9) {
+      // Trường hợp toàn bộ giá trị = 0
+      maxV = 0.5;
+      minV = -0.5;
+    } else {
+      final double padding = range * 0.10;
+
+      maxV += padding;
+      minV -= padding;
+    }
+
+    range = maxV - minV;
+
+    if (range.abs() < 1e-9) {
       range = 1.0;
     }
 
-    final double padding = range * 0.12;
-
-    maxV += padding;
-    minV -= padding;
-
-    range = maxV - minV;
+    // ============================================================
+    // VALUE -> Y
+    // ============================================================
 
     double valueToY(double value) {
       return macdTopY + ((maxV - value) / range) * macdChartHeight;
@@ -153,7 +239,11 @@ mixin DrawMACDMixin {
       ..color = Colors.grey.withValues(alpha: 0.2)
       ..strokeWidth = 0.5;
 
-    const int horizontalLines = 2;
+    // ------------------------------------------------------------
+    // Horizontal grid
+    // ------------------------------------------------------------
+
+    const int horizontalLines = 1;
 
     for (int i = 0; i <= horizontalLines; i++) {
       final double y = macdTopY + (macdChartHeight / horizontalLines) * i;
@@ -161,16 +251,22 @@ mixin DrawMACDMixin {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
     }
 
+    // ------------------------------------------------------------
+    // Vertical grid
+    // ------------------------------------------------------------
+
     const int verticalLines = 4;
 
-    for (int i = 0; i <= verticalLines; i++) {
-      final double x = size.width / verticalLines * i;
+    if (klines.length > verticalLines * 5) {
+      for (int i = 0; i <= verticalLines; i++) {
+        final double x = (size.width / verticalLines) * i;
 
-      canvas.drawLine(
-        Offset(x, macdTopY),
-        Offset(x, macdTopY + macdChartHeight),
-        gridPaint,
-      );
+        canvas.drawLine(
+          Offset(x, macdTopY),
+          Offset(x, macdTopY + macdChartHeight),
+          gridPaint,
+        );
+      }
     }
 
     // ============================================================
@@ -179,98 +275,114 @@ mixin DrawMACDMixin {
 
     final double zeroY = valueToY(0);
 
-    final Paint zeroPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.25)
+    final Paint zeroLinePaint = Paint()
+      ..color = Colors.grey.withValues(alpha: 0.45)
       ..strokeWidth = 0.7;
 
-    canvas.drawLine(Offset(0, zeroY), Offset(size.width, zeroY), zeroPaint);
+    canvas.drawLine(Offset(0, zeroY), Offset(size.width, zeroY), zeroLinePaint);
 
     // ============================================================
     // PAINT
     // ============================================================
 
     final Paint macdPaint = Paint()
-      ..color = Colors.blueAccent
-      ..strokeWidth = 1.3
+      ..color = Colors.blueAccent.withValues(alpha: 0.95)
+      ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
       ..isAntiAlias = true;
 
     final Paint signalPaint = Paint()
-      ..color = Colors.orange
-      ..strokeWidth = 1.3
+      ..color = Colors.orange.withValues(alpha: 0.95)
+      ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
       ..isAntiAlias = true;
 
     final Paint histogramUpPaint = Paint()
-      ..color = Colors.greenAccent.withValues(alpha: 0.75)
+      ..color = Colors.greenAccent.withValues(alpha: 0.65)
       ..style = PaintingStyle.fill;
 
     final Paint histogramDownPaint = Paint()
-      ..color = Colors.redAccent.withValues(alpha: 0.75)
+      ..color = Colors.redAccent.withValues(alpha: 0.65)
       ..style = PaintingStyle.fill;
-
-    // ============================================================
-    // PATH
-    // ============================================================
-
-    final Path macdPath = Path();
-    final Path signalPath = Path();
-
-    bool macdStarted = false;
-    bool signalStarted = false;
-
-    final double barWidth = max(1.0, candleWidth * 0.8);
-
-    // Giá trị candle cuối cùng visible.
-    double? currentMACD;
-    double? currentSignal;
-    double? currentHistogram;
 
     // ============================================================
     // HISTOGRAM
     // ============================================================
 
-    for (final point in visibleHistogram) {
+    final double barWidth = max(1.0, candleWidth * 0.8);
+
+    for (final IndicatorPoint point in histogram) {
       final int? candleIndex = candleIndexByTime[point.time];
 
-      if (candleIndex == null) continue;
-
-      final double x =
-          candleIndex * candleWidthWithSpacing - scrollX + spacing / 2;
-
-      if (x + candleWidth < 0 || x > size.width) {
+      if (candleIndex == null) {
         continue;
       }
 
-      final double value = point.value;
+      if (candleIndex < visibleStartIndex || candleIndex > visibleEndIndex) {
+        continue;
+      }
 
-      final double barY = valueToY(value);
+      final double candleX =
+          candleIndex * candleWidthWithSpacing - scrollX + spacing / 2;
 
-      final Paint paint = value >= 0 ? histogramUpPaint : histogramDownPaint;
+      if (candleX + candleWidth < 0 || candleX > size.width) {
+        continue;
+      }
+
+      final double histogramValue = point.value;
+
+      final double barY = valueToY(histogramValue);
+
+      // Căn histogram vào giữa candle
+      final double barX = candleX + (candleWidth - barWidth) / 2;
+
+      final Paint barPaint = histogramValue >= 0
+          ? histogramUpPaint
+          : histogramDownPaint;
 
       canvas.drawRect(
-        Rect.fromLTRB(x, min(barY, zeroY), x + barWidth, max(barY, zeroY)),
-        paint,
+        Rect.fromLTRB(
+          barX,
+          min(barY, zeroY),
+          barX + barWidth,
+          max(barY, zeroY),
+        ),
+        barPaint,
       );
-
-      currentHistogram = value;
     }
 
     // ============================================================
-    // MACD LINE
+    // MACD PATH
     // ============================================================
 
-    for (final point in visibleMACD) {
+    final Path macdPath = Path();
+
+    bool macdStarted = false;
+
+    for (final IndicatorPoint point in macdLine) {
       final int? candleIndex = candleIndexByTime[point.time];
 
-      if (candleIndex == null) continue;
-
-      final double x =
-          candleIndex * candleWidthWithSpacing - scrollX + spacing / 2;
-
-      if (x + candleWidth < 0 || x > size.width) {
+      if (candleIndex == null) {
         continue;
       }
+
+      if (candleIndex < visibleStartIndex || candleIndex > visibleEndIndex) {
+        continue;
+      }
+
+      final double candleX =
+          candleIndex * candleWidthWithSpacing - scrollX + spacing / 2;
+
+      if (candleX + candleWidth < 0 || candleX > size.width) {
+        continue;
+      }
+
+      // Line nằm giữa candle
+      final double x = candleX + candleWidth / 2;
 
       final double y = valueToY(point.value);
 
@@ -280,25 +392,39 @@ mixin DrawMACDMixin {
       } else {
         macdPath.lineTo(x, y);
       }
+    }
 
-      currentMACD = point.value;
+    if (macdStarted) {
+      canvas.drawPath(macdPath, macdPaint);
     }
 
     // ============================================================
-    // SIGNAL LINE
+    // SIGNAL PATH
     // ============================================================
 
-    for (final point in visibleSignal) {
+    final Path signalPath = Path();
+
+    bool signalStarted = false;
+
+    for (final IndicatorPoint point in signalLine) {
       final int? candleIndex = candleIndexByTime[point.time];
 
-      if (candleIndex == null) continue;
-
-      final double x =
-          candleIndex * candleWidthWithSpacing - scrollX + spacing / 2;
-
-      if (x + candleWidth < 0 || x > size.width) {
+      if (candleIndex == null) {
         continue;
       }
+
+      if (candleIndex < visibleStartIndex || candleIndex > visibleEndIndex) {
+        continue;
+      }
+
+      final double candleX =
+          candleIndex * candleWidthWithSpacing - scrollX + spacing / 2;
+
+      if (candleX + candleWidth < 0 || candleX > size.width) {
+        continue;
+      }
+
+      final double x = candleX + candleWidth / 2;
 
       final double y = valueToY(point.value);
 
@@ -308,12 +434,6 @@ mixin DrawMACDMixin {
       } else {
         signalPath.lineTo(x, y);
       }
-
-      currentSignal = point.value;
-    }
-
-    if (macdStarted) {
-      canvas.drawPath(macdPath, macdPaint);
     }
 
     if (signalStarted) {
@@ -321,181 +441,176 @@ mixin DrawMACDMixin {
     }
 
     // ============================================================
-    // LABEL GIÁ TRỊ BÊN PHẢI
-    // Giống cách POC / VAH / VAL
-    // ============================================================
-
-    if (currentMACD != null) {
-      _drawMACDPriceLabel(
-        canvas,
-        currentMACD,
-        valueToY(currentMACD),
-        Colors.blueAccent,
-        size.width,
-      );
-    }
-
-    if (currentSignal != null) {
-      _drawMACDPriceLabel(
-        canvas,
-        currentSignal,
-        valueToY(currentSignal),
-        Colors.orange,
-        size.width,
-      );
-    }
-
-    // ============================================================
-    // LEGEND TRÊN MACD
+    // LABEL GÓC TRÊN BÊN TRÁI
+    //
+    // Giống Volume MA:
+    //
+    // MACD(12,26,9)  MACD: xxx  Signal: xxx  Hist: xxx
     // ============================================================
 
     if (currentMACD != null &&
         currentSignal != null &&
         currentHistogram != null) {
-      _drawMACDLegend(
+      _drawMACDLabelTopLeft(
         canvas: canvas,
-        topY: macdTopY,
-        macd: currentMACD,
-        signal: currentSignal,
-        histogram: currentHistogram,
+        macdTopY: macdTopY,
+        macdValue: currentMACD,
+        signalValue: currentSignal,
+        histogramValue: currentHistogram,
       );
     }
 
     canvas.restore();
+
+    // ============================================================
+    // LABEL SCALE BÊN PHẢI
+    // ============================================================
+
+    _drawMACDRightLabels(
+      canvas: canvas,
+      size: size,
+      macdTopY: macdTopY,
+      macdChartHeight: macdChartHeight,
+      maxValue: maxV,
+      minValue: minV,
+      zeroY: zeroY,
+      currentMACD: currentMACD,
+      currentSignal: currentSignal,
+      valueToY: valueToY,
+    );
   }
 
   // ==============================================================
-  // HEADER / LEGEND
+  // MACD LABEL TOP LEFT
+  //
+  // Tham khảo:
+  // _drawVolumeMALabelTopLeft()
   // ==============================================================
 
-  void _drawMACDLegend({
+  void _drawMACDLabelTopLeft({
     required Canvas canvas,
-    required double topY,
-    required double macd,
-    required double signal,
-    required double histogram,
+    required double macdTopY,
+    required double macdValue,
+    required double signalValue,
+    required double histogramValue,
   }) {
-    final Color histogramColor = histogram >= 0
-        ? Colors.greenAccent
-        : Colors.redAccent;
+    // ============================================================
+    // COLORS
+    // ============================================================
 
-    final TextPainter painter = TextPainter(
-      text: TextSpan(
-        children: [
-          const TextSpan(
-            text: 'MACD 12 26 close 9  ',
-            style: TextStyle(color: Colors.white70, fontSize: 10),
-          ),
+    final Color titleColor = Colors.white.withValues(alpha: 0.75);
 
-          TextSpan(
-            text: '${_formatValue(macd)}  ',
-            style: const TextStyle(
-              color: Colors.blueAccent,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+    final Color macdColor = Colors.blueAccent.withValues(alpha: 0.95);
 
-          TextSpan(
-            text: '${_formatValue(signal)}  ',
-            style: const TextStyle(
-              color: Colors.orange,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+    final Color signalColor = Colors.orange.withValues(alpha: 0.95);
 
-          TextSpan(
-            text: _formatValue(histogram),
-            style: TextStyle(
-              color: histogramColor,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-            ),
+    final Color histogramColor = histogramValue >= 0
+        ? Colors.greenAccent.withValues(alpha: 0.95)
+        : Colors.redAccent.withValues(alpha: 0.95);
+
+    // ============================================================
+    // TEXT
+    // ============================================================
+
+    final TextSpan textSpan = TextSpan(
+      children: [
+        // --------------------------------------------------------
+        // TITLE
+        // --------------------------------------------------------
+        TextSpan(
+          text: 'MACD(12,26,9)  ',
+          style: TextStyle(
+            color: titleColor,
+            fontSize: 9,
+            fontWeight: FontWeight.w300,
           ),
-        ],
-      ),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
+        ),
+
+        // --------------------------------------------------------
+        // MACD
+        // --------------------------------------------------------
+        TextSpan(
+          text: 'MACD: ${_formatMACD(macdValue)}',
+          style: TextStyle(
+            color: macdColor,
+            fontSize: 9,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+
+        // --------------------------------------------------------
+        // SPACE
+        // --------------------------------------------------------
+        TextSpan(
+          text: '    ',
+          style: TextStyle(color: titleColor, fontSize: 9),
+        ),
+
+        // --------------------------------------------------------
+        // SIGNAL
+        // --------------------------------------------------------
+        TextSpan(
+          text: 'Signal: ${_formatMACD(signalValue)}',
+          style: TextStyle(
+            color: signalColor,
+            fontSize: 9,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+
+        // --------------------------------------------------------
+        // SPACE
+        // --------------------------------------------------------
+        TextSpan(
+          text: '    ',
+          style: TextStyle(color: titleColor, fontSize: 9),
+        ),
+
+        // --------------------------------------------------------
+        // HISTOGRAM
+        // --------------------------------------------------------
+        TextSpan(
+          text: 'Hist: ${_formatMACD(histogramValue)}',
+          style: TextStyle(
+            color: histogramColor,
+            fontSize: 9,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+      ],
     );
-
-    painter.layout();
-
-    final Paint backgroundPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.55);
-
-    final RRect background = RRect.fromRectAndRadius(
-      Rect.fromLTWH(4, topY + 3, painter.width + 10, painter.height + 6),
-      const Radius.circular(3),
-    );
-
-    canvas.drawRRect(background, backgroundPaint);
-
-    painter.paint(canvas, Offset(9, topY + 6));
-  }
-
-  // ==============================================================
-  // LABEL GIÁ TRỊ BÊN PHẢI
-  // ==============================================================
-
-  void _drawMACDPriceLabel(
-    Canvas canvas,
-    double value,
-    double y,
-    Color color,
-    double canvasWidth,
-  ) {
-    final String valueText = _formatValue(value);
 
     final TextPainter textPainter = TextPainter(
-      text: TextSpan(
-        text: valueText,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 9,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
+      text: textSpan,
+      textDirection: ui.TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
 
-    textPainter.layout();
+    // ============================================================
+    // Giống Volume:
+    //
+    // tp.paint(
+    //   canvas,
+    //   Offset(6, volumeTopY + 2),
+    // );
+    // ============================================================
 
-    const double paddingX = 4;
-    const double paddingY = 2;
-
-    final double labelX = canvasWidth - textPainter.width - paddingX * 2;
-
-    final double labelY = y - textPainter.height / 2;
-
-    final RRect backgroundRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(
-        labelX,
-        labelY - paddingY,
-        textPainter.width + paddingX * 2,
-        textPainter.height + paddingY * 2,
-      ),
-      const Radius.circular(2),
-    );
-
-    final Paint backgroundPaint = Paint()
-      ..color = color.withValues(alpha: 0.8)
-      ..style = PaintingStyle.fill;
-
-    canvas.drawRRect(backgroundRect, backgroundPaint);
-
-    textPainter.paint(canvas, Offset(labelX + paddingX, labelY));
+    textPainter.paint(canvas, Offset(6, macdTopY + 2));
   }
 
   // ==============================================================
-  // FORMAT
+  // FORMAT MACD
   // ==============================================================
 
-  String _formatValue(double value) {
+  String _formatMACD(double value) {
     final double absValue = value.abs();
 
+    if (absValue >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(1)}M';
+    }
+
     if (absValue >= 1000) {
-      return value.toStringAsFixed(0);
+      return '${(value / 1000).toStringAsFixed(1)}K';
     }
 
     if (absValue >= 100) {
@@ -511,5 +626,178 @@ mixin DrawMACDMixin {
     }
 
     return value.toStringAsFixed(4);
+  }
+
+  void _drawMACDRightLabels({
+    required Canvas canvas,
+    required Size size,
+    required double macdTopY,
+    required double macdChartHeight,
+    required double maxValue,
+    required double minValue,
+    required double zeroY,
+    required double? currentMACD,
+    required double? currentSignal,
+    required double Function(double) valueToY,
+  }) {
+    const double rightOffset = 2.0;
+    const double paddingX = 4.0;
+    const double paddingY = 1.0;
+
+    // ============================================================
+    // LABEL THƯỜNG: MAX / 0 / MIN
+    // ============================================================
+
+    void drawNormalLabel(String text, double y) {
+      final TextPainter textPainter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.55),
+            fontSize: 9,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+        textDirection: ui.TextDirection.ltr,
+      )..layout();
+
+      // Số nằm sát mép phải, nhưng vẫn trong canvas.
+      final double x = size.width - textPainter.width - rightOffset;
+
+      double safeY = y;
+
+      safeY = safeY.clamp(
+        macdTopY,
+        macdTopY + macdChartHeight - textPainter.height,
+      );
+
+      textPainter.paint(canvas, Offset(x, safeY));
+    }
+
+    // MAX
+    drawNormalLabel(_formatMACD(maxValue), macdTopY + 1);
+
+    // ZERO
+    drawNormalLabel('0', zeroY - 5);
+
+    // MIN
+    drawNormalLabel(_formatMACD(minValue), macdTopY + macdChartHeight - 11);
+
+    // ============================================================
+    // CURRENT MACD LABEL
+    // ============================================================
+
+    if (currentMACD != null) {
+      _drawMACDCurrentRightLabel(
+        canvas: canvas,
+        size: size,
+        value: currentMACD,
+        y: valueToY(currentMACD),
+        macdTopY: macdTopY,
+        macdChartHeight: macdChartHeight,
+        color: Colors.blueAccent,
+        paddingX: paddingX,
+        paddingY: paddingY,
+      );
+    }
+
+    // ============================================================
+    // CURRENT SIGNAL LABEL
+    // ============================================================
+
+    if (currentSignal != null) {
+      double signalY = valueToY(currentSignal);
+
+      // Nếu MACD và Signal quá gần nhau,
+      // đẩy Signal xuống một chút để không đè chữ.
+      if (currentMACD != null) {
+        final double macdY = valueToY(currentMACD);
+
+        if ((signalY - macdY).abs() < 14) {
+          if (signalY >= macdY) {
+            signalY += 14;
+          } else {
+            signalY -= 14;
+          }
+        }
+      }
+
+      _drawMACDCurrentRightLabel(
+        canvas: canvas,
+        size: size,
+        value: currentSignal,
+        y: signalY,
+        macdTopY: macdTopY,
+        macdChartHeight: macdChartHeight,
+        color: Colors.orange,
+        paddingX: paddingX,
+        paddingY: paddingY,
+      );
+    }
+  }
+
+  void _drawMACDCurrentRightLabel({
+    required Canvas canvas,
+    required Size size,
+    required double value,
+    required double y,
+    required double macdTopY,
+    required double macdChartHeight,
+    required Color color,
+    required double paddingX,
+    required double paddingY,
+  }) {
+    final String text = _formatMACD(value);
+
+    final TextPainter textPainter = TextPainter(
+      text: const TextSpan(),
+      textDirection: ui.TextDirection.ltr,
+    );
+
+    textPainter.text = TextSpan(
+      text: text,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 9,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+
+    textPainter.layout();
+
+    final double boxWidth = textPainter.width + paddingX * 2;
+
+    final double boxHeight = textPainter.height + paddingY * 2;
+
+    // ============================================================
+    // X: sát mép phải
+    // ============================================================
+
+    final double x = size.width - boxWidth;
+
+    // ============================================================
+    // Y
+    // ============================================================
+
+    double safeY = y - boxHeight / 2;
+
+    safeY = safeY.clamp(macdTopY, macdTopY + macdChartHeight - boxHeight);
+
+    // ============================================================
+    // BACKGROUND
+    // ============================================================
+
+    final RRect rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(x, safeY, boxWidth, boxHeight),
+      const Radius.circular(3),
+    );
+
+    canvas.drawRRect(rect, Paint()..color = color.withValues(alpha: 0.75));
+
+    // ============================================================
+    // TEXT
+    // ============================================================
+
+    textPainter.paint(canvas, Offset(x + paddingX, safeY + paddingY));
   }
 }
