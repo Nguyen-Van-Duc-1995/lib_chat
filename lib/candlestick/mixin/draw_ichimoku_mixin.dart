@@ -3,6 +3,10 @@ import 'package:chart/model/kline_data.dart';
 import 'package:chart/utils/indicator_calculator.dart';
 import '../../model/ichimoku_data.dart';
 
+// ================================================================
+// CLOUD POINT
+// ================================================================
+
 class CloudPoint {
   final Offset offset;
   final int dataIndex;
@@ -17,11 +21,24 @@ class CloudPoint {
   });
 }
 
-mixin DrawIchimokuMixin {
-  // ==============================================================
-  // DRAW ICHIMOKU
-  // ==============================================================
+// ================================================================
+// LABEL POINT
+//
+// Lưu giá trị + vị trí X của điểm ngoài cùng bên phải đang hiển thị.
+// ================================================================
 
+class IchimokuLabelPoint {
+  final double x;
+  final double value;
+
+  IchimokuLabelPoint({required this.x, required this.value});
+}
+
+// ================================================================
+// DRAW ICHIMOKU
+// ================================================================
+
+mixin DrawIchimokuMixin {
   void drawIchimoku({
     required Canvas canvas,
     required Size size,
@@ -33,8 +50,9 @@ mixin DrawIchimokuMixin {
     required double spacing,
     required double scrollX,
 
-    // _priceToY của project đang nhận 2 tham số.
-    required Function(double, double) priceToY,
+    // Project của bạn đang dùng:
+    // double _priceToY(double price, double chartHeight)
+    required double Function(double, double) priceToY,
 
     int tenkanPeriod = 9,
     int kijunPeriod = 26,
@@ -42,67 +60,83 @@ mixin DrawIchimokuMixin {
     int displacement = 26,
 
     // ============================================================
-    // ICHIMOKU CÁCH MÉP PHẢI
+    // LỀ PHẢI ICHIMOKU
     // ============================================================
     double rightPadding = 0.0,
   }) {
-    if (klines.isEmpty) return;
+    if (klines.isEmpty) {
+      return;
+    }
+
+    if (chartHeight <= 0) {
+      return;
+    }
 
     // ============================================================
-    // CALCULATE ICHIMOKU
+    // 1. CALCULATE ICHIMOKU
     // ============================================================
 
-    final ichimokuData = IndicatorCalculator.calculateIchimoku(
-      klines,
-      tenkanPeriod: tenkanPeriod,
-      kijunPeriod: kijunPeriod,
-      senkouSpanBPeriod: senkouSpanBPeriod,
-      displacement: displacement,
-    );
+    final List<IchimokuData> ichimokuData =
+        IndicatorCalculator.calculateIchimoku(
+          klines,
+          tenkanPeriod: tenkanPeriod,
+          kijunPeriod: kijunPeriod,
+          senkouSpanBPeriod: senkouSpanBPeriod,
+          displacement: displacement,
+        );
 
-    if (ichimokuData.isEmpty) return;
+    if (ichimokuData.isEmpty) {
+      return;
+    }
+
+    // ============================================================
+    // 2. X SETTINGS
+    // ============================================================
 
     final double candleWidthWithSpacing = candleWidth + spacing;
 
+    // Giữ đúng cách tính X của code hiện tại.
+    final double xOffset = spacing / 2;
+
     // ============================================================
-    // MÉP PHẢI RIÊNG CỦA ICHIMOKU
+    // 3. MÉP PHẢI ICHIMOKU
     //
-    // size.width
-    // ┌──────────────────────────────────────────┐
-    // │                         │     50 px       │
-    // │        ICHIMOKU         │                 │
-    // │                         │                 │
-    // └─────────────────────────┴─────────────────┘
+    // Ví dụ:
     //
-    // Ichimoku chỉ được vẽ tới:
-    // size.width - rightPadding
+    // |-----------------------------|----------|
+    // |        ICHIMOKU             |   50px   |
+    // |-----------------------------|----------|
+    //
     // ============================================================
 
-    final double ichimokuRight = (size.width - rightPadding).clamp(
-      0.0,
-      size.width,
-    );
+    final double ichimokuRight = size.width > rightPadding
+        ? size.width - rightPadding
+        : 0.0;
 
     // ============================================================
-    // COLORS
+    // 4. COLORS
     // ============================================================
 
-    final Color tenkanColor = const Color(0xFFFF6B9D);
+    const Color tenkanColor = Color(0xFFFF6B9D);
 
-    final Color kijunColor = const Color(0xFF4FC3F7);
+    const Color kijunColor = Color(0xFF4FC3F7);
 
-    final Color chikouColor = const Color(0xFF66BB6A);
+    const Color chikouColor = Color(0xFF66BB6A);
+
+    const Color senkouAColor = Color(0xFF4CAF50);
+
+    const Color senkouBColor = Color(0xFFFF7043);
 
     final Color cloudBullishColor = const Color(
       0xFF4CAF50,
-    ).withValues(alpha: 0.2);
+    ).withValues(alpha: 0.20);
 
     final Color cloudBearishColor = const Color(
       0xFF8D4E85,
-    ).withValues(alpha: 0.2);
+    ).withValues(alpha: 0.20);
 
     // ============================================================
-    // PAINTS
+    // 5. PAINTS
     // ============================================================
 
     final Paint tenkanPaint = Paint()
@@ -127,21 +161,21 @@ mixin DrawIchimokuMixin {
       ..style = PaintingStyle.stroke;
 
     final Paint senkouSpanAPaint = Paint()
-      ..color = const Color(0xFF4CAF50).withValues(alpha: 0.7)
+      ..color = senkouAColor.withValues(alpha: 0.70)
       ..strokeWidth = 0.8
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     final Paint senkouSpanBPaint = Paint()
-      ..color = const Color(0xFFFF7043).withValues(alpha: 0.7)
+      ..color = senkouBColor.withValues(alpha: 0.70)
       ..strokeWidth = 0.8
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     // ============================================================
-    // PATHS
+    // 6. PATHS
     // ============================================================
 
     final Path tenkanPath = Path();
@@ -154,42 +188,36 @@ mixin DrawIchimokuMixin {
     bool tenkanStarted = false;
     bool kijunStarted = false;
     bool chikouStarted = false;
+
     bool senkouAStarted = false;
     bool senkouBStarted = false;
 
     // ============================================================
-    // CLOUD POINTS
+    // 7. CLOUD POINTS
     // ============================================================
 
     final List<CloudPoint> cloudPointsA = [];
     final List<CloudPoint> cloudPointsB = [];
 
     // ============================================================
-    // BUILD CLOUD
-    //
-    // Senkou Span A/B được đẩy về trước displacement.
-    //
-    // Có lấy thêm buffer ngoài vùng clip một chút để đường cloud
-    // khi tới mép không bị thiếu segment.
-    //
-    // Nhưng canvas.clipRect() phía dưới sẽ đảm bảo Ichimoku
-    // KHÔNG BAO GIỜ xuất hiện trong 50px cuối.
+    // 8. BUILD CLOUD DATA
     // ============================================================
 
     for (int i = 0; i < ichimokuData.length; i++) {
-      final data = ichimokuData[i];
+      final IchimokuData data = ichimokuData[i];
 
       if (data.senkouSpanA <= 0 || data.senkouSpanB <= 0) {
         continue;
       }
 
+      // Senkou tiến về trước displacement.
       final int senkouIndex = i + displacement;
 
       final double senkouX =
-          senkouIndex * candleWidthWithSpacing - scrollX + spacing / 2;
+          senkouIndex * candleWidthWithSpacing - scrollX + xOffset;
 
       // ----------------------------------------------------------
-      // Bên trái
+      // Quá xa bên trái
       // ----------------------------------------------------------
 
       if (senkouX < -100) {
@@ -197,10 +225,9 @@ mixin DrawIchimokuMixin {
       }
 
       // ----------------------------------------------------------
-      // Bên phải
+      // Quá xa bên phải.
       //
-      // Giữ thêm buffer 100px để path nối đẹp.
-      // ClipRect sẽ cắt chính xác tại ichimokuRight.
+      // Có buffer để segment cuối được nối tới mép clip.
       // ----------------------------------------------------------
 
       if (senkouX > ichimokuRight + 100) {
@@ -231,10 +258,11 @@ mixin DrawIchimokuMixin {
     }
 
     // ============================================================
-    // BẮT ĐẦU CLIP ICHIMOKU
+    // 9. BẮT ĐẦU CLIP ICHIMOKU
     //
-    // Tất cả Cloud + Senkou + Tenkan + Kijun + Chikou
-    // đều bị giới hạn tại size.width - rightPadding.
+    // Cloud + tất cả đường chỉ được vẽ tới:
+    //
+    // size.width - rightPadding
     // ============================================================
 
     canvas.save();
@@ -242,7 +270,7 @@ mixin DrawIchimokuMixin {
     canvas.clipRect(Rect.fromLTRB(0, 0, ichimokuRight, chartHeight));
 
     // ============================================================
-    // DRAW CLOUD FIRST
+    // 10. DRAW CLOUD
     // ============================================================
 
     _drawIchimokuCloud(
@@ -254,21 +282,19 @@ mixin DrawIchimokuMixin {
     );
 
     // ============================================================
-    // BUILD ICHIMOKU LINES
+    // 11. BUILD LINES
     // ============================================================
 
     for (int i = 0; i < ichimokuData.length; i++) {
-      final data = ichimokuData[i];
+      final IchimokuData data = ichimokuData[i];
 
-      final double x = i * candleWidthWithSpacing - scrollX + spacing / 2;
+      final double x = i * candleWidthWithSpacing - scrollX + xOffset;
 
       // ==========================================================
       // TENKAN-SEN
       // ==========================================================
 
       if (data.tenkanSen > 0 && i >= tenkanPeriod - 1) {
-        // Có buffer 50px.
-        // ClipRect mới là giới hạn thật.
         if (x >= -50 && x <= ichimokuRight + 50) {
           final double y = priceToY(data.tenkanSen, chartHeight);
 
@@ -303,7 +329,7 @@ mixin DrawIchimokuMixin {
       // ==========================================================
       // CHIKOU SPAN
       //
-      // Lùi về phía sau displacement.
+      // Chikou lùi về phía sau displacement.
       // ==========================================================
 
       final int chikouIndex = i - displacement;
@@ -312,7 +338,7 @@ mixin DrawIchimokuMixin {
           chikouIndex < klines.length &&
           data.chikouSpan > 0) {
         final double chikouX =
-            chikouIndex * candleWidthWithSpacing - scrollX + spacing / 2;
+            chikouIndex * candleWidthWithSpacing - scrollX + xOffset;
 
         if (chikouX >= -50 && chikouX <= ichimokuRight + 50) {
           final double y = priceToY(data.chikouSpan, chartHeight);
@@ -328,19 +354,17 @@ mixin DrawIchimokuMixin {
       }
 
       // ==========================================================
-      // SENKOU SPAN A + B
+      // SENKOU A + B
       //
-      // Đẩy về phía trước displacement.
+      // Tiến về phía trước displacement.
       // ==========================================================
 
       if (data.senkouSpanA > 0 && data.senkouSpanB > 0) {
         final int senkouIndex = i + displacement;
 
         final double senkouX =
-            senkouIndex * candleWidthWithSpacing - scrollX + spacing / 2;
+            senkouIndex * candleWidthWithSpacing - scrollX + xOffset;
 
-        // Buffer một đoạn ngoài vùng clip để đường đi tới mép
-        // được nối tự nhiên.
         if (senkouX >= -50 && senkouX <= ichimokuRight + 100) {
           final double yA = priceToY(data.senkouSpanA, chartHeight);
 
@@ -374,7 +398,7 @@ mixin DrawIchimokuMixin {
     }
 
     // ============================================================
-    // DRAW SENKOU LINES
+    // 12. DRAW SENKOU
     // ============================================================
 
     canvas.drawPath(senkouSpanAPath, senkouSpanAPaint);
@@ -382,7 +406,7 @@ mixin DrawIchimokuMixin {
     canvas.drawPath(senkouSpanBPath, senkouSpanBPaint);
 
     // ============================================================
-    // DRAW MAIN LINES
+    // 13. DRAW MAIN LINES
     // ============================================================
 
     canvas.drawPath(tenkanPath, tenkanPaint);
@@ -392,27 +416,47 @@ mixin DrawIchimokuMixin {
     canvas.drawPath(chikouPath, chikouPaint);
 
     // ============================================================
-    // KẾT THÚC CLIP
+    // 14. END CLIP
     //
-    // QUAN TRỌNG:
-    // restore trước khi vẽ label.
-    //
-    // Nếu không thì labels cũng bị cắt ở size.width - 50.
+    // Labels sẽ được vẽ sau restore.
+    // Vì vậy chúng có thể nằm trong vùng rightPadding.
     // ============================================================
 
     canvas.restore();
 
     // ============================================================
-    // LABELS
+    // 15. LABELS CHẠY THEO ĐƯỜNG
     //
-    // Không bị ảnh hưởng bởi clip 50px.
+    // KHÔNG dùng:
+    //
+    // ichimokuData.last
+    //
+    // nữa.
+    //
+    // Tìm điểm ngoài cùng bên phải hiện đang hiển thị.
+    // Khi scroll -> value thay đổi -> Y thay đổi -> label chạy.
     // ============================================================
 
-    if (ichimokuData.isNotEmpty) {
-      final lastData = ichimokuData.last;
+    _drawVisibleIchimokuLabels(
+      canvas: canvas,
+      size: size,
+      ichimokuData: ichimokuData,
+      candleWidthWithSpacing: candleWidthWithSpacing,
+      xOffset: xOffset,
+      scrollX: scrollX,
+      chartHeight: chartHeight,
+      ichimokuRight: ichimokuRight,
+      displacement: displacement,
+      tenkanPeriod: tenkanPeriod,
+      kijunPeriod: kijunPeriod,
+      priceToY: priceToY,
 
-      _drawIchimokuLabels(canvas, size, lastData, priceToY, chartHeight);
-    }
+      tenkanColor: tenkanColor,
+      kijunColor: kijunColor,
+      chikouColor: chikouColor,
+      senkouAColor: senkouAColor,
+      senkouBColor: senkouBColor,
+    );
   }
 
   // ==============================================================
@@ -442,7 +486,7 @@ mixin DrawIchimokuMixin {
       final CloudPoint pointB2 = pointsB[i + 1];
 
       // ==========================================================
-      // Không nối cloud xuyên qua dữ liệu bị thiếu.
+      // Không nối cloud xuyên vùng thiếu dữ liệu.
       // ==========================================================
 
       if (pointA2.dataIndex != pointA1.dataIndex + 1 ||
@@ -451,7 +495,7 @@ mixin DrawIchimokuMixin {
       }
 
       // ==========================================================
-      // BULLISH / BEARISH
+      // CLOUD COLOR
       // ==========================================================
 
       final bool isBullish = pointA1.spanAValue > pointA1.spanBValue;
@@ -478,82 +522,320 @@ mixin DrawIchimokuMixin {
   }
 
   // ==============================================================
-  // DRAW LABELS
+  // LABELS ĐANG HIỂN THỊ
+  //
+  // Tìm point ngoài cùng bên phải của từng đường.
   // ==============================================================
 
-  void _drawIchimokuLabels(
-    Canvas canvas,
-    Size size,
-    IchimokuData data,
-    Function(double, double) priceToY,
-    double chartHeight,
-  ) {
-    const double paddingX = 4.0;
-    const double paddingY = 2.0;
+  void _drawVisibleIchimokuLabels({
+    required Canvas canvas,
+    required Size size,
+    required List<IchimokuData> ichimokuData,
+    required double candleWidthWithSpacing,
+    required double xOffset,
+    required double scrollX,
+    required double chartHeight,
+    required double ichimokuRight,
+    required int displacement,
+    required int tenkanPeriod,
+    required int kijunPeriod,
+    required double Function(double, double) priceToY,
+    required Color tenkanColor,
+    required Color kijunColor,
+    required Color chikouColor,
+    required Color senkouAColor,
+    required Color senkouBColor,
+  }) {
+    if (ichimokuData.isEmpty) {
+      return;
+    }
 
-    // Giữ nguyên vị trí label theo code cũ.
-    const double rightMargin = 45.0;
+    // ============================================================
+    // POINT NGOÀI CÙNG BÊN PHẢI
+    // ============================================================
 
-    final labels = [
-      {
-        'text': 'T: ${data.tenkanSen.toStringAsFixed(2)}',
-        'color': const Color(0xFFFF6B9D),
-        'value': data.tenkanSen,
-      },
-      {
-        'text': 'K: ${data.kijunSen.toStringAsFixed(2)}',
-        'color': const Color(0xFF4FC3F7),
-        'value': data.kijunSen,
-      },
-      {
-        'text': 'C: ${data.chikouSpan.toStringAsFixed(2)}',
-        'color': const Color(0xFF66BB6A),
-        'value': data.chikouSpan,
-      },
-    ];
+    IchimokuLabelPoint? tenkanPoint;
+    IchimokuLabelPoint? kijunPoint;
+    IchimokuLabelPoint? chikouPoint;
+    IchimokuLabelPoint? senkouAPoint;
+    IchimokuLabelPoint? senkouBPoint;
 
-    for (final label in labels) {
-      final double value = label['value'] as double;
+    // ============================================================
+    // TENKAN + KIJUN
+    // ============================================================
 
-      if (value <= 0) {
+    for (int i = 0; i < ichimokuData.length; i++) {
+      final IchimokuData data = ichimokuData[i];
+
+      final double x = i * candleWidthWithSpacing - scrollX + xOffset;
+
+      // Bên trái màn hình.
+      if (x < 0) {
         continue;
       }
 
-      final String text = label['text'] as String;
+      // Qua vùng Ichimoku bên phải.
+      if (x > ichimokuRight) {
+        break;
+      }
 
-      final Color color = label['color'] as Color;
+      // ----------------------------------------------------------
+      // TENKAN
+      // ----------------------------------------------------------
 
-      const TextStyle textStyle = TextStyle(
-        color: Colors.white,
-        fontSize: 9,
-        fontWeight: FontWeight.w500,
-      );
+      if (i >= tenkanPeriod - 1 && data.tenkanSen > 0) {
+        tenkanPoint = IchimokuLabelPoint(x: x, value: data.tenkanSen);
+      }
 
-      final TextPainter textPainter = TextPainter(
-        text: TextSpan(text: text, style: textStyle),
-        textDirection: TextDirection.ltr,
-      )..layout();
+      // ----------------------------------------------------------
+      // KIJUN
+      // ----------------------------------------------------------
 
-      final double boxWidth = textPainter.width + paddingX * 2;
-
-      final double boxHeight = textPainter.height + paddingY * 2;
-
-      final double y = priceToY(value, chartHeight);
-
-      final double dx = size.width - boxWidth + rightMargin;
-
-      final double dy = y - boxHeight / 2;
-
-      final RRect rect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(dx, dy, boxWidth, boxHeight),
-        const Radius.circular(3),
-      );
-
-      final Paint bgPaint = Paint()..color = color.withValues(alpha: 0.8);
-
-      canvas.drawRRect(rect, bgPaint);
-
-      textPainter.paint(canvas, Offset(dx + paddingX, dy + paddingY));
+      if (i >= kijunPeriod - 1 && data.kijunSen > 0) {
+        kijunPoint = IchimokuLabelPoint(x: x, value: data.kijunSen);
+      }
     }
+
+    // ============================================================
+    // CHIKOU
+    // ============================================================
+
+    for (int i = 0; i < ichimokuData.length; i++) {
+      final IchimokuData data = ichimokuData[i];
+
+      if (data.chikouSpan <= 0) {
+        continue;
+      }
+
+      final int chikouIndex = i - displacement;
+
+      if (chikouIndex < 0) {
+        continue;
+      }
+
+      final double chikouX =
+          chikouIndex * candleWidthWithSpacing - scrollX + xOffset;
+
+      if (chikouX < 0) {
+        continue;
+      }
+
+      if (chikouX > ichimokuRight) {
+        break;
+      }
+
+      chikouPoint = IchimokuLabelPoint(x: chikouX, value: data.chikouSpan);
+    }
+
+    // ============================================================
+    // SENKOU A + B
+    //
+    // X phải cộng displacement giống lúc vẽ đường.
+    // ============================================================
+
+    for (int i = 0; i < ichimokuData.length; i++) {
+      final IchimokuData data = ichimokuData[i];
+
+      if (data.senkouSpanA <= 0 || data.senkouSpanB <= 0) {
+        continue;
+      }
+
+      final int senkouIndex = i + displacement;
+
+      final double senkouX =
+          senkouIndex * candleWidthWithSpacing - scrollX + xOffset;
+
+      if (senkouX < 0) {
+        continue;
+      }
+
+      if (senkouX > ichimokuRight) {
+        break;
+      }
+
+      senkouAPoint = IchimokuLabelPoint(x: senkouX, value: data.senkouSpanA);
+
+      senkouBPoint = IchimokuLabelPoint(x: senkouX, value: data.senkouSpanB);
+    }
+
+    // ============================================================
+    // DRAW LABELS
+    //
+    // Mỗi label:
+    // - value lấy tại point hiện đang nhìn thấy.
+    // - Y lấy đúng từ value của đường.
+    // - X nằm ngay sau point cuối.
+    // ============================================================
+
+    if (tenkanPoint != null) {
+      _drawIchimokuLineLabel(
+        canvas: canvas,
+        size: size,
+        point: tenkanPoint,
+        chartHeight: chartHeight,
+        priceToY: priceToY,
+        prefix: 'T',
+        color: tenkanColor,
+      );
+    }
+
+    if (kijunPoint != null) {
+      _drawIchimokuLineLabel(
+        canvas: canvas,
+        size: size,
+        point: kijunPoint,
+        chartHeight: chartHeight,
+        priceToY: priceToY,
+        prefix: 'K',
+        color: kijunColor,
+      );
+    }
+
+    if (chikouPoint != null) {
+      _drawIchimokuLineLabel(
+        canvas: canvas,
+        size: size,
+        point: chikouPoint,
+        chartHeight: chartHeight,
+        priceToY: priceToY,
+        prefix: 'C',
+        color: chikouColor,
+      );
+    }
+
+    if (senkouAPoint != null) {
+      _drawIchimokuLineLabel(
+        canvas: canvas,
+        size: size,
+        point: senkouAPoint,
+        chartHeight: chartHeight,
+        priceToY: priceToY,
+        prefix: 'A',
+        color: senkouAColor,
+      );
+    }
+
+    if (senkouBPoint != null) {
+      _drawIchimokuLineLabel(
+        canvas: canvas,
+        size: size,
+        point: senkouBPoint,
+        chartHeight: chartHeight,
+        priceToY: priceToY,
+        prefix: 'B',
+        color: senkouBColor,
+      );
+    }
+  }
+
+  // ==============================================================
+  // DRAW 1 LABEL TRÊN ĐƯỜNG
+  // ==============================================================
+
+  void _drawIchimokuLineLabel({
+    required Canvas canvas,
+    required Size size,
+    required IchimokuLabelPoint point,
+    required double chartHeight,
+    required double Function(double, double) priceToY,
+    required String prefix,
+    required Color color,
+  }) {
+    // ============================================================
+    // TEXT
+    // ============================================================
+
+    final String text = '$prefix: ${point.value.toStringAsFixed(2)}';
+
+    const TextStyle textStyle = TextStyle(
+      color: Colors.white,
+      fontSize: 9,
+      fontWeight: FontWeight.w500,
+    );
+
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(text: text, style: textStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    // ============================================================
+    // BOX SIZE
+    // ============================================================
+
+    const double paddingX = 4.0;
+
+    const double paddingY = 2.0;
+
+    final double boxWidth = textPainter.width + paddingX * 2;
+
+    final double boxHeight = textPainter.height + paddingY * 2;
+
+    // ============================================================
+    // Y BÁM THEO ĐƯỜNG
+    //
+    // Khi value thay đổi do scroll:
+    // Y sẽ thay đổi theo.
+    // ============================================================
+
+    final double y = priceToY(point.value, chartHeight);
+
+    // ============================================================
+    // X BÁM THEO POINT CUỐI
+    //
+    // Label nằm ngay bên phải point ngoài cùng.
+    //
+    // Ichimoku dừng trước 50px nên label có thể nằm trong
+    // vùng 50px đó.
+    // ============================================================
+
+    double dx = point.x + 4.0;
+
+    // Không cho box vượt màn hình.
+    if (dx + boxWidth > size.width - 2) {
+      dx = size.width - boxWidth - 2;
+    }
+
+    if (dx < 2) {
+      dx = 2;
+    }
+
+    // ============================================================
+    // VERTICAL POSITION
+    // ============================================================
+
+    double dy = y - boxHeight / 2;
+
+    // Không vượt top.
+    if (dy < 0) {
+      dy = 0;
+    }
+
+    // Không vượt bottom chart.
+    if (dy + boxHeight > chartHeight) {
+      dy = chartHeight - boxHeight;
+    }
+
+    // ============================================================
+    // RECT
+    // ============================================================
+
+    final RRect rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(dx, dy, boxWidth, boxHeight),
+      const Radius.circular(3),
+    );
+
+    // ============================================================
+    // BACKGROUND
+    // ============================================================
+
+    final Paint bgPaint = Paint()..color = color.withValues(alpha: 0.85);
+
+    canvas.drawRRect(rect, bgPaint);
+
+    // ============================================================
+    // TEXT
+    // ============================================================
+
+    textPainter.paint(canvas, Offset(dx + paddingX, dy + paddingY));
   }
 }
