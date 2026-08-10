@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:chart/model/kline_data.dart';
 import 'package:chart/utils/indicator_calculator.dart';
@@ -47,26 +46,24 @@ mixin DrawIchimokuMixin {
 
     if (ichimokuData.isEmpty) return;
 
-    final candleWidthWithSpacing = candleWidth + spacing;
+    final double candleWidthWithSpacing = candleWidth + spacing;
 
-    // Colors for Ichimoku lines - corrected to match TradingView standard
-    final tenkanColor = Color(
-      0xFFFF6B9D,
-    ); // Pink for Tenkan-sen (Conversion Line)
-    final kijunColor = Color(
-      0xFF4FC3F7,
-    ); // Light Blue for Kijun-sen (Base Line)
-    final chikouColor = Color(
-      0xFF66BB6A,
-    ); // Green for Chikou Span (Lagging Span)
-    final cloudBullishColor = Color(
-      0xFF4CAF50,
-    ).withOpacity(0.2); // Green cloud when Span A > Span B
-    final cloudBearishColor = Color(
-      0xFF8D4E85,
-    ).withOpacity(0.2); // Brown/Purple cloud when Span A < Span B
+    // ============================================================
+    // COLORS
+    // ============================================================
 
-    // Paint objects
+    final tenkanColor = const Color(0xFFFF6B9D);
+    final kijunColor = const Color(0xFF4FC3F7);
+    final chikouColor = const Color(0xFF66BB6A);
+
+    final cloudBullishColor = const Color(0xFF4CAF50).withValues(alpha: 0.2);
+
+    final cloudBearishColor = const Color(0xFF8D4E85).withValues(alpha: 0.2);
+
+    // ============================================================
+    // PAINTS
+    // ============================================================
+
     final tenkanPaint = Paint()
       ..color = tenkanColor
       ..strokeWidth = 1.2
@@ -82,7 +79,20 @@ mixin DrawIchimokuMixin {
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    // Paths for lines
+    final senkouSpanAPaint = Paint()
+      ..color = const Color(0xFF4CAF50).withValues(alpha: 0.7)
+      ..strokeWidth = 0.8
+      ..style = PaintingStyle.stroke;
+
+    final senkouSpanBPaint = Paint()
+      ..color = const Color(0xFFFF7043).withValues(alpha: 0.7)
+      ..strokeWidth = 0.8
+      ..style = PaintingStyle.stroke;
+
+    // ============================================================
+    // PATHS
+    // ============================================================
+
     final tenkanPath = Path();
     final kijunPath = Path();
     final chikouPath = Path();
@@ -95,87 +105,71 @@ mixin DrawIchimokuMixin {
     bool senkouAStarted = false;
     bool senkouBStarted = false;
 
-    // Lists to store cloud points for filling with corresponding data
-    List<CloudPoint> cloudPointsA = [];
-    List<CloudPoint> cloudPointsB = [];
+    // ============================================================
+    // CLOUD POINTS
+    // ============================================================
 
-    // Only extend cloud when we're near the end of data (optimization)
-    final bool shouldExtendCloud =
-        scrollX > (ichimokuData.length - 50) * candleWidthWithSpacing;
-    final int futureExtension = shouldExtendCloud ? displacement : 0;
+    final List<CloudPoint> cloudPointsA = [];
+    final List<CloudPoint> cloudPointsB = [];
 
-    // First pass: collect all cloud points including displaced ones
+    // ============================================================
+    // BUILD CLOUD
+    //
+    // QUAN TRỌNG:
+    // Senkou Span chỉ được đẩy về phía trước đúng `displacement`.
+    //
+    // Ví dụ:
+    // candle cuối = N
+    // cloud cuối  = N + 26
+    //
+    // Không extend tiếp N + 27 ... N + 52.
+    // ============================================================
+
     for (int i = 0; i < ichimokuData.length; i++) {
       final data = ichimokuData[i];
 
-      // For Senkou Spans - these are displaced FORWARD by 26 periods
-      final futureIndex = i + displacement;
-      if (data.senkouSpanA > 0 && data.senkouSpanB > 0) {
-        final double futureX =
-            futureIndex * candleWidthWithSpacing - scrollX + spacing / 2;
-
-        // Add cloud points even beyond the last candle (for future projection)
-        if (futureX >= -100 && futureX <= size.width + 200) {
-          final yA = priceToY(data.senkouSpanA, chartHeight);
-          final yB = priceToY(data.senkouSpanB, chartHeight);
-
-          cloudPointsA.add(
-            CloudPoint(
-              offset: Offset(futureX, yA),
-              dataIndex: i,
-              spanAValue: data.senkouSpanA,
-              spanBValue: data.senkouSpanB,
-            ),
-          );
-          cloudPointsB.add(
-            CloudPoint(
-              offset: Offset(futureX, yB),
-              dataIndex: i,
-              spanAValue: data.senkouSpanA,
-              spanBValue: data.senkouSpanB,
-            ),
-          );
-        }
+      if (data.senkouSpanA <= 0 || data.senkouSpanB <= 0) {
+        continue;
       }
+
+      final int senkouIndex = i + displacement;
+
+      final double senkouX =
+          senkouIndex * candleWidthWithSpacing - scrollX + spacing / 2;
+
+      // Buffer ngoài màn hình một chút để path không bị cắt đột ngột.
+      // Đây KHÔNG phải là extend thêm dữ liệu.
+      if (senkouX < -100 || senkouX > size.width + 200) {
+        continue;
+      }
+
+      final double yA = priceToY(data.senkouSpanA, chartHeight);
+
+      final double yB = priceToY(data.senkouSpanB, chartHeight);
+
+      cloudPointsA.add(
+        CloudPoint(
+          offset: Offset(senkouX, yA),
+          dataIndex: i,
+          spanAValue: data.senkouSpanA,
+          spanBValue: data.senkouSpanB,
+        ),
+      );
+
+      cloudPointsB.add(
+        CloudPoint(
+          offset: Offset(senkouX, yB),
+          dataIndex: i,
+          spanAValue: data.senkouSpanA,
+          spanBValue: data.senkouSpanB,
+        ),
+      );
     }
 
-    // Add future extension points (repeat last values into the future)
-    if (shouldExtendCloud &&
-        ichimokuData.isNotEmpty &&
-        cloudPointsA.isNotEmpty) {
-      final lastData = ichimokuData.last;
-      if (lastData.senkouSpanA > 0 && lastData.senkouSpanB > 0) {
-        for (int i = 1; i <= futureExtension; i++) {
-          final futureIndex = ichimokuData.length - 1 + displacement + i;
-          final futureX =
-              futureIndex * candleWidthWithSpacing - scrollX + spacing / 2;
+    // ============================================================
+    // DRAW CLOUD FIRST
+    // ============================================================
 
-          if (futureX <= size.width + 200) {
-            final yA = priceToY(lastData.senkouSpanA, chartHeight);
-            final yB = priceToY(lastData.senkouSpanB, chartHeight);
-
-            cloudPointsA.add(
-              CloudPoint(
-                offset: Offset(futureX, yA),
-                dataIndex: ichimokuData.length - 1,
-                spanAValue: lastData.senkouSpanA,
-                spanBValue: lastData.senkouSpanB,
-              ),
-            );
-            cloudPointsB.add(
-              CloudPoint(
-                offset: Offset(futureX, yB),
-                dataIndex: ichimokuData.length - 1,
-                spanAValue: lastData.senkouSpanA,
-                spanBValue: lastData.senkouSpanB,
-              ),
-            );
-          }
-        }
-      }
-    }
-
-    // Draw the cloud first (so it appears behind other lines)
     _drawIchimokuCloud(
       canvas,
       cloudPointsA,
@@ -184,43 +178,66 @@ mixin DrawIchimokuMixin {
       cloudBearishColor,
     );
 
-    // Second pass: draw the lines
+    // ============================================================
+    // DRAW ICHIMOKU LINES
+    // ============================================================
+
     for (int i = 0; i < ichimokuData.length; i++) {
       final data = ichimokuData[i];
+
       final double x = i * candleWidthWithSpacing - scrollX + spacing / 2;
 
-      // Skip if outside visible area for line drawing
-      if (x + candleWidth < -50 || x > size.width + 50) continue;
+      // ==========================================================
+      // TENKAN-SEN
+      // ==========================================================
 
-      // Draw Tenkan-sen (Conversion Line)
       if (data.tenkanSen > 0 && i >= tenkanPeriod - 1) {
-        final y = priceToY(data.tenkanSen, chartHeight);
-        if (!tenkanStarted) {
-          tenkanPath.moveTo(x, y);
-          tenkanStarted = true;
-        } else {
-          tenkanPath.lineTo(x, y);
+        if (x >= -50 && x <= size.width + 50) {
+          final double y = priceToY(data.tenkanSen, chartHeight);
+
+          if (!tenkanStarted) {
+            tenkanPath.moveTo(x, y);
+            tenkanStarted = true;
+          } else {
+            tenkanPath.lineTo(x, y);
+          }
         }
       }
 
-      // Draw Kijun-sen (Base Line)
+      // ==========================================================
+      // KIJUN-SEN
+      // ==========================================================
+
       if (data.kijunSen > 0 && i >= kijunPeriod - 1) {
-        final y = priceToY(data.kijunSen, chartHeight);
-        if (!kijunStarted) {
-          kijunPath.moveTo(x, y);
-          kijunStarted = true;
-        } else {
-          kijunPath.lineTo(x, y);
+        if (x >= -50 && x <= size.width + 50) {
+          final double y = priceToY(data.kijunSen, chartHeight);
+
+          if (!kijunStarted) {
+            kijunPath.moveTo(x, y);
+            kijunStarted = true;
+          } else {
+            kijunPath.lineTo(x, y);
+          }
         }
       }
 
-      // Draw Chikou Span (Lagging Span) - displaced backwards by 26 periods
-      final chikouIndex = i - displacement;
-      if (chikouIndex >= 0 && chikouIndex < klines.length) {
-        final chikouX =
+      // ==========================================================
+      // CHIKOU SPAN
+      //
+      // Lùi về phía sau `displacement`.
+      // ==========================================================
+
+      final int chikouIndex = i - displacement;
+
+      if (chikouIndex >= 0 &&
+          chikouIndex < klines.length &&
+          data.chikouSpan > 0) {
+        final double chikouX =
             chikouIndex * candleWidthWithSpacing - scrollX + spacing / 2;
+
         if (chikouX >= -50 && chikouX <= size.width + 50) {
-          final y = priceToY(data.chikouSpan, chartHeight);
+          final double y = priceToY(data.chikouSpan, chartHeight);
+
           if (!chikouStarted) {
             chikouPath.moveTo(chikouX, y);
             chikouStarted = true;
@@ -230,18 +247,24 @@ mixin DrawIchimokuMixin {
         }
       }
 
-      // Draw Senkou Spans (Leading Spans) - displaced forward by 26 periods
-      final senkouIndex = i + displacement;
+      // ==========================================================
+      // SENKOU SPAN A + B
+      //
+      // Đẩy về phía trước đúng `displacement`.
+      // Không có loop extend thêm sau candle cuối.
+      // ==========================================================
+
       if (data.senkouSpanA > 0 && data.senkouSpanB > 0) {
-        final senkouX =
+        final int senkouIndex = i + displacement;
+
+        final double senkouX =
             senkouIndex * candleWidthWithSpacing - scrollX + spacing / 2;
 
-        // Draw Senkou spans even beyond the current data (into future)
         if (senkouX >= -50 && senkouX <= size.width + 200) {
-          final yA = priceToY(data.senkouSpanA, chartHeight);
-          final yB = priceToY(data.senkouSpanB, chartHeight);
+          final double yA = priceToY(data.senkouSpanA, chartHeight);
 
-          // Draw Senkou Span A path
+          final double yB = priceToY(data.senkouSpanB, chartHeight);
+
           if (!senkouAStarted) {
             senkouSpanAPath.moveTo(senkouX, yA);
             senkouAStarted = true;
@@ -249,7 +272,6 @@ mixin DrawIchimokuMixin {
             senkouSpanAPath.lineTo(senkouX, yA);
           }
 
-          // Draw Senkou Span B path
           if (!senkouBStarted) {
             senkouSpanBPath.moveTo(senkouX, yB);
             senkouBStarted = true;
@@ -260,53 +282,38 @@ mixin DrawIchimokuMixin {
       }
     }
 
-    // Extend Senkou Span lines into the future (repeat last values)
-    if (ichimokuData.isNotEmpty) {
-      final lastData = ichimokuData.last;
-      if (lastData.senkouSpanA > 0 && lastData.senkouSpanB > 0) {
-        for (int i = 1; i <= displacement; i++) {
-          final futureIndex = ichimokuData.length - 1 + displacement + i;
-          final futureX =
-              futureIndex * candleWidthWithSpacing - scrollX + spacing / 2;
-
-          if (futureX <= size.width + 200) {
-            final yA = priceToY(lastData.senkouSpanA, chartHeight);
-            final yB = priceToY(lastData.senkouSpanB, chartHeight);
-
-            senkouSpanAPath.lineTo(futureX, yA);
-            senkouSpanBPath.lineTo(futureX, yB);
-          }
-        }
-      }
-    }
-
-    // Draw Senkou Span lines with different colors for A and B
-    final senkouSpanAPaint = Paint()
-      ..color = Color(0xFF4CAF50)
-          .withOpacity(0.7) // Green for Senkou Span A
-      ..strokeWidth = 0.8
-      ..style = PaintingStyle.stroke;
-
-    final senkouSpanBPaint = Paint()
-      ..color = Color(0xFFFF7043)
-          .withOpacity(0.7) // Light Red for Senkou Span B
-      ..strokeWidth = 0.8
-      ..style = PaintingStyle.stroke;
+    // ============================================================
+    // DRAW SENKOU LINES
+    // ============================================================
 
     canvas.drawPath(senkouSpanAPath, senkouSpanAPaint);
+
     canvas.drawPath(senkouSpanBPath, senkouSpanBPaint);
 
-    // Draw main lines
+    // ============================================================
+    // DRAW MAIN LINES
+    // ============================================================
+
     canvas.drawPath(tenkanPath, tenkanPaint);
+
     canvas.drawPath(kijunPath, kijunPaint);
+
     canvas.drawPath(chikouPath, chikouPaint);
 
-    // Draw current values labels
+    // ============================================================
+    // LABELS
+    // ============================================================
+
     if (ichimokuData.isNotEmpty) {
       final lastData = ichimokuData.last;
+
       _drawIchimokuLabels(canvas, size, lastData, priceToY, chartHeight);
     }
   }
+
+  // ==============================================================
+  // DRAW CLOUD
+  // ==============================================================
 
   void _drawIchimokuCloud(
     Canvas canvas,
@@ -317,35 +324,46 @@ mixin DrawIchimokuMixin {
   ) {
     if (pointsA.length < 2 ||
         pointsB.length < 2 ||
-        pointsA.length != pointsB.length)
+        pointsA.length != pointsB.length) {
       return;
+    }
 
-    // Draw cloud segments with proper color logic based on actual data values
     for (int i = 0; i < pointsA.length - 1; i++) {
-      final pointA1 = pointsA[i];
-      final pointA2 = pointsA[i + 1];
-      final pointB1 = pointsB[i];
-      final pointB2 = pointsB[i + 1];
+      final CloudPoint pointA1 = pointsA[i];
+      final CloudPoint pointA2 = pointsA[i + 1];
 
-      // Color determination: Green when Span A > Span B, Brown when Span A < Span B
+      final CloudPoint pointB1 = pointsB[i];
+      final CloudPoint pointB2 = pointsB[i + 1];
+
+      // Nếu 2 point không liên tiếp trong dữ liệu
+      // thì không nối cloud xuyên qua vùng trống.
+      if (pointA2.dataIndex != pointA1.dataIndex + 1 ||
+          pointB2.dataIndex != pointB1.dataIndex + 1) {
+        continue;
+      }
+
       final bool isBullish = pointA1.spanAValue > pointA1.spanBValue;
-      final color = isBullish ? bullishColor : bearishColor;
 
-      // Create path for this segment
-      final path = Path();
-      path.moveTo(pointA1.offset.dx, pointA1.offset.dy);
-      path.lineTo(pointA2.offset.dx, pointA2.offset.dy);
-      path.lineTo(pointB2.offset.dx, pointB2.offset.dy);
-      path.lineTo(pointB1.offset.dx, pointB1.offset.dy);
-      path.close();
+      final Color color = isBullish ? bullishColor : bearishColor;
 
-      final paint = Paint()
+      final Path path = Path()
+        ..moveTo(pointA1.offset.dx, pointA1.offset.dy)
+        ..lineTo(pointA2.offset.dx, pointA2.offset.dy)
+        ..lineTo(pointB2.offset.dx, pointB2.offset.dy)
+        ..lineTo(pointB1.offset.dx, pointB1.offset.dy)
+        ..close();
+
+      final Paint paint = Paint()
         ..color = color
         ..style = PaintingStyle.fill;
 
       canvas.drawPath(path, paint);
     }
   }
+
+  // ==============================================================
+  // DRAW LABELS
+  // ==============================================================
 
   void _drawIchimokuLabels(
     Canvas canvas,
@@ -358,56 +376,63 @@ mixin DrawIchimokuMixin {
     const double paddingY = 2.0;
     const double rightMargin = 45.0;
 
-    // Labels data with corrected colors
     final labels = [
       {
         'text': 'T: ${data.tenkanSen.toStringAsFixed(2)}',
-        'color': Color(0xFFFF6B9D), // Pink for Tenkan
+        'color': const Color(0xFFFF6B9D),
         'value': data.tenkanSen,
       },
       {
         'text': 'K: ${data.kijunSen.toStringAsFixed(2)}',
-        'color': Color(0xFF4FC3F7), // Light Blue for Kijun
+        'color': const Color(0xFF4FC3F7),
         'value': data.kijunSen,
       },
       {
         'text': 'C: ${data.chikouSpan.toStringAsFixed(2)}',
-        'color': Color(0xFF66BB6A), // Green for Chikou
+        'color': const Color(0xFF66BB6A),
         'value': data.chikouSpan,
       },
     ];
 
     for (final label in labels) {
-      if (label['value'] as double <= 0) continue;
+      final double value = label['value'] as double;
 
-      final text = label['text'] as String;
-      final color = label['color'] as Color;
-      final value = label['value'] as double;
+      if (value <= 0) {
+        continue;
+      }
 
-      final textStyle = TextStyle(
+      final String text = label['text'] as String;
+
+      final Color color = label['color'] as Color;
+
+      const TextStyle textStyle = TextStyle(
         color: Colors.white,
         fontSize: 9,
         fontWeight: FontWeight.w500,
       );
 
-      final textPainter = TextPainter(
+      final TextPainter textPainter = TextPainter(
         text: TextSpan(text: text, style: textStyle),
         textDirection: TextDirection.ltr,
       )..layout();
 
-      final boxWidth = textPainter.width + paddingX * 2;
-      final boxHeight = textPainter.height + paddingY * 2;
+      final double boxWidth = textPainter.width + paddingX * 2;
 
-      final y = priceToY(value, chartHeight);
-      final dx = size.width - boxWidth + rightMargin;
-      final dy = y - boxHeight / 2;
+      final double boxHeight = textPainter.height + paddingY * 2;
 
-      final rect = RRect.fromRectAndRadius(
+      final double y = priceToY(value, chartHeight);
+
+      final double dx = size.width - boxWidth + rightMargin;
+
+      final double dy = y - boxHeight / 2;
+
+      final RRect rect = RRect.fromRectAndRadius(
         Rect.fromLTWH(dx, dy, boxWidth, boxHeight),
         const Radius.circular(3),
       );
 
-      final bgPaint = Paint()..color = color.withOpacity(0.8);
+      final Paint bgPaint = Paint()..color = color.withValues(alpha: 0.8);
+
       canvas.drawRRect(rect, bgPaint);
 
       textPainter.paint(canvas, Offset(dx + paddingX, dy + paddingY));
