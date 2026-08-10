@@ -18,6 +18,10 @@ class CloudPoint {
 }
 
 mixin DrawIchimokuMixin {
+  // ==============================================================
+  // DRAW ICHIMOKU
+  // ==============================================================
+
   void drawIchimoku({
     required Canvas canvas,
     required Size size,
@@ -28,13 +32,25 @@ mixin DrawIchimokuMixin {
     required double candleWidth,
     required double spacing,
     required double scrollX,
+
+    // _priceToY của project đang nhận 2 tham số.
     required Function(double, double) priceToY,
+
     int tenkanPeriod = 9,
     int kijunPeriod = 26,
     int senkouSpanBPeriod = 52,
     int displacement = 26,
+
+    // ============================================================
+    // ICHIMOKU CÁCH MÉP PHẢI
+    // ============================================================
+    double rightPadding = 0.0,
   }) {
     if (klines.isEmpty) return;
+
+    // ============================================================
+    // CALCULATE ICHIMOKU
+    // ============================================================
 
     final ichimokuData = IndicatorCalculator.calculateIchimoku(
       klines,
@@ -49,55 +65,91 @@ mixin DrawIchimokuMixin {
     final double candleWidthWithSpacing = candleWidth + spacing;
 
     // ============================================================
+    // MÉP PHẢI RIÊNG CỦA ICHIMOKU
+    //
+    // size.width
+    // ┌──────────────────────────────────────────┐
+    // │                         │     50 px       │
+    // │        ICHIMOKU         │                 │
+    // │                         │                 │
+    // └─────────────────────────┴─────────────────┘
+    //
+    // Ichimoku chỉ được vẽ tới:
+    // size.width - rightPadding
+    // ============================================================
+
+    final double ichimokuRight = (size.width - rightPadding).clamp(
+      0.0,
+      size.width,
+    );
+
+    // ============================================================
     // COLORS
     // ============================================================
 
-    final tenkanColor = const Color(0xFFFF6B9D);
-    final kijunColor = const Color(0xFF4FC3F7);
-    final chikouColor = const Color(0xFF66BB6A);
+    final Color tenkanColor = const Color(0xFFFF6B9D);
 
-    final cloudBullishColor = const Color(0xFF4CAF50).withValues(alpha: 0.2);
+    final Color kijunColor = const Color(0xFF4FC3F7);
 
-    final cloudBearishColor = const Color(0xFF8D4E85).withValues(alpha: 0.2);
+    final Color chikouColor = const Color(0xFF66BB6A);
+
+    final Color cloudBullishColor = const Color(
+      0xFF4CAF50,
+    ).withValues(alpha: 0.2);
+
+    final Color cloudBearishColor = const Color(
+      0xFF8D4E85,
+    ).withValues(alpha: 0.2);
 
     // ============================================================
     // PAINTS
     // ============================================================
 
-    final tenkanPaint = Paint()
+    final Paint tenkanPaint = Paint()
       ..color = tenkanColor
       ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
-    final kijunPaint = Paint()
+    final Paint kijunPaint = Paint()
       ..color = kijunColor
       ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
-    final chikouPaint = Paint()
+    final Paint chikouPaint = Paint()
       ..color = chikouColor
       ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
-    final senkouSpanAPaint = Paint()
+    final Paint senkouSpanAPaint = Paint()
       ..color = const Color(0xFF4CAF50).withValues(alpha: 0.7)
       ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
-    final senkouSpanBPaint = Paint()
+    final Paint senkouSpanBPaint = Paint()
       ..color = const Color(0xFFFF7043).withValues(alpha: 0.7)
       ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     // ============================================================
     // PATHS
     // ============================================================
 
-    final tenkanPath = Path();
-    final kijunPath = Path();
-    final chikouPath = Path();
-    final senkouSpanAPath = Path();
-    final senkouSpanBPath = Path();
+    final Path tenkanPath = Path();
+    final Path kijunPath = Path();
+    final Path chikouPath = Path();
+
+    final Path senkouSpanAPath = Path();
+    final Path senkouSpanBPath = Path();
 
     bool tenkanStarted = false;
     bool kijunStarted = false;
@@ -115,14 +167,13 @@ mixin DrawIchimokuMixin {
     // ============================================================
     // BUILD CLOUD
     //
-    // QUAN TRỌNG:
-    // Senkou Span chỉ được đẩy về phía trước đúng `displacement`.
+    // Senkou Span A/B được đẩy về trước displacement.
     //
-    // Ví dụ:
-    // candle cuối = N
-    // cloud cuối  = N + 26
+    // Có lấy thêm buffer ngoài vùng clip một chút để đường cloud
+    // khi tới mép không bị thiếu segment.
     //
-    // Không extend tiếp N + 27 ... N + 52.
+    // Nhưng canvas.clipRect() phía dưới sẽ đảm bảo Ichimoku
+    // KHÔNG BAO GIỜ xuất hiện trong 50px cuối.
     // ============================================================
 
     for (int i = 0; i < ichimokuData.length; i++) {
@@ -137,10 +188,23 @@ mixin DrawIchimokuMixin {
       final double senkouX =
           senkouIndex * candleWidthWithSpacing - scrollX + spacing / 2;
 
-      // Buffer ngoài màn hình một chút để path không bị cắt đột ngột.
-      // Đây KHÔNG phải là extend thêm dữ liệu.
-      if (senkouX < -100 || senkouX > size.width + 200) {
+      // ----------------------------------------------------------
+      // Bên trái
+      // ----------------------------------------------------------
+
+      if (senkouX < -100) {
         continue;
+      }
+
+      // ----------------------------------------------------------
+      // Bên phải
+      //
+      // Giữ thêm buffer 100px để path nối đẹp.
+      // ClipRect sẽ cắt chính xác tại ichimokuRight.
+      // ----------------------------------------------------------
+
+      if (senkouX > ichimokuRight + 100) {
+        break;
       }
 
       final double yA = priceToY(data.senkouSpanA, chartHeight);
@@ -167,6 +231,17 @@ mixin DrawIchimokuMixin {
     }
 
     // ============================================================
+    // BẮT ĐẦU CLIP ICHIMOKU
+    //
+    // Tất cả Cloud + Senkou + Tenkan + Kijun + Chikou
+    // đều bị giới hạn tại size.width - rightPadding.
+    // ============================================================
+
+    canvas.save();
+
+    canvas.clipRect(Rect.fromLTRB(0, 0, ichimokuRight, chartHeight));
+
+    // ============================================================
     // DRAW CLOUD FIRST
     // ============================================================
 
@@ -179,7 +254,7 @@ mixin DrawIchimokuMixin {
     );
 
     // ============================================================
-    // DRAW ICHIMOKU LINES
+    // BUILD ICHIMOKU LINES
     // ============================================================
 
     for (int i = 0; i < ichimokuData.length; i++) {
@@ -192,11 +267,14 @@ mixin DrawIchimokuMixin {
       // ==========================================================
 
       if (data.tenkanSen > 0 && i >= tenkanPeriod - 1) {
-        if (x >= -50 && x <= size.width + 50) {
+        // Có buffer 50px.
+        // ClipRect mới là giới hạn thật.
+        if (x >= -50 && x <= ichimokuRight + 50) {
           final double y = priceToY(data.tenkanSen, chartHeight);
 
           if (!tenkanStarted) {
             tenkanPath.moveTo(x, y);
+
             tenkanStarted = true;
           } else {
             tenkanPath.lineTo(x, y);
@@ -209,11 +287,12 @@ mixin DrawIchimokuMixin {
       // ==========================================================
 
       if (data.kijunSen > 0 && i >= kijunPeriod - 1) {
-        if (x >= -50 && x <= size.width + 50) {
+        if (x >= -50 && x <= ichimokuRight + 50) {
           final double y = priceToY(data.kijunSen, chartHeight);
 
           if (!kijunStarted) {
             kijunPath.moveTo(x, y);
+
             kijunStarted = true;
           } else {
             kijunPath.lineTo(x, y);
@@ -224,7 +303,7 @@ mixin DrawIchimokuMixin {
       // ==========================================================
       // CHIKOU SPAN
       //
-      // Lùi về phía sau `displacement`.
+      // Lùi về phía sau displacement.
       // ==========================================================
 
       final int chikouIndex = i - displacement;
@@ -235,11 +314,12 @@ mixin DrawIchimokuMixin {
         final double chikouX =
             chikouIndex * candleWidthWithSpacing - scrollX + spacing / 2;
 
-        if (chikouX >= -50 && chikouX <= size.width + 50) {
+        if (chikouX >= -50 && chikouX <= ichimokuRight + 50) {
           final double y = priceToY(data.chikouSpan, chartHeight);
 
           if (!chikouStarted) {
             chikouPath.moveTo(chikouX, y);
+
             chikouStarted = true;
           } else {
             chikouPath.lineTo(chikouX, y);
@@ -250,8 +330,7 @@ mixin DrawIchimokuMixin {
       // ==========================================================
       // SENKOU SPAN A + B
       //
-      // Đẩy về phía trước đúng `displacement`.
-      // Không có loop extend thêm sau candle cuối.
+      // Đẩy về phía trước displacement.
       // ==========================================================
 
       if (data.senkouSpanA > 0 && data.senkouSpanB > 0) {
@@ -260,20 +339,32 @@ mixin DrawIchimokuMixin {
         final double senkouX =
             senkouIndex * candleWidthWithSpacing - scrollX + spacing / 2;
 
-        if (senkouX >= -50 && senkouX <= size.width + 200) {
+        // Buffer một đoạn ngoài vùng clip để đường đi tới mép
+        // được nối tự nhiên.
+        if (senkouX >= -50 && senkouX <= ichimokuRight + 100) {
           final double yA = priceToY(data.senkouSpanA, chartHeight);
 
           final double yB = priceToY(data.senkouSpanB, chartHeight);
 
+          // ------------------------------------------------------
+          // SENKOU A
+          // ------------------------------------------------------
+
           if (!senkouAStarted) {
             senkouSpanAPath.moveTo(senkouX, yA);
+
             senkouAStarted = true;
           } else {
             senkouSpanAPath.lineTo(senkouX, yA);
           }
 
+          // ------------------------------------------------------
+          // SENKOU B
+          // ------------------------------------------------------
+
           if (!senkouBStarted) {
             senkouSpanBPath.moveTo(senkouX, yB);
+
             senkouBStarted = true;
           } else {
             senkouSpanBPath.lineTo(senkouX, yB);
@@ -301,7 +392,20 @@ mixin DrawIchimokuMixin {
     canvas.drawPath(chikouPath, chikouPaint);
 
     // ============================================================
+    // KẾT THÚC CLIP
+    //
+    // QUAN TRỌNG:
+    // restore trước khi vẽ label.
+    //
+    // Nếu không thì labels cũng bị cắt ở size.width - 50.
+    // ============================================================
+
+    canvas.restore();
+
+    // ============================================================
     // LABELS
+    //
+    // Không bị ảnh hưởng bởi clip 50px.
     // ============================================================
 
     if (ichimokuData.isNotEmpty) {
@@ -330,21 +434,33 @@ mixin DrawIchimokuMixin {
 
     for (int i = 0; i < pointsA.length - 1; i++) {
       final CloudPoint pointA1 = pointsA[i];
+
       final CloudPoint pointA2 = pointsA[i + 1];
 
       final CloudPoint pointB1 = pointsB[i];
+
       final CloudPoint pointB2 = pointsB[i + 1];
 
-      // Nếu 2 point không liên tiếp trong dữ liệu
-      // thì không nối cloud xuyên qua vùng trống.
+      // ==========================================================
+      // Không nối cloud xuyên qua dữ liệu bị thiếu.
+      // ==========================================================
+
       if (pointA2.dataIndex != pointA1.dataIndex + 1 ||
           pointB2.dataIndex != pointB1.dataIndex + 1) {
         continue;
       }
 
+      // ==========================================================
+      // BULLISH / BEARISH
+      // ==========================================================
+
       final bool isBullish = pointA1.spanAValue > pointA1.spanBValue;
 
       final Color color = isBullish ? bullishColor : bearishColor;
+
+      // ==========================================================
+      // CLOUD SEGMENT
+      // ==========================================================
 
       final Path path = Path()
         ..moveTo(pointA1.offset.dx, pointA1.offset.dy)
@@ -374,6 +490,8 @@ mixin DrawIchimokuMixin {
   ) {
     const double paddingX = 4.0;
     const double paddingY = 2.0;
+
+    // Giữ nguyên vị trí label theo code cũ.
     const double rightMargin = 45.0;
 
     final labels = [
