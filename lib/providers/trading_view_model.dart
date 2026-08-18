@@ -126,6 +126,7 @@ class TradingViewModel extends ChangeNotifier {
 
   void handleSearchPressed(dynamic data) {
     if (onSearchPressed != null) {
+      debugPrint("invoking callback with data: $data");
       onSearchPressed!(data);
     } else {
       debugPrint("Search pressed - no callback assigned.");
