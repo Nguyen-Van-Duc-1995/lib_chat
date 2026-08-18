@@ -43,7 +43,7 @@ class HeaderSection extends StatelessWidget {
         color: AppColors.background,
         border: Border(
           bottom: BorderSide(
-            color: AppColors.gridLine.withOpacity(0.3),
+            color: AppColors.gridLine.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -77,7 +77,7 @@ class HeaderSection extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: AppColors.textSecondary.withOpacity(0.5),
+                        color: AppColors.textSecondary.withValues(alpha: 0.5),
                         width: 1,
                       ),
                       borderRadius: BorderRadius.circular(4),
@@ -142,7 +142,18 @@ class HeaderSection extends StatelessWidget {
               ),
               Row(
                 children: [
-                  Icon(Icons.star, color: AppColors.accentYellow, size: 24),
+                  GestureDetector(
+                    onTap: () {
+                      viewModel.handleSearchPressed({
+                        'selectStart': ticker.symbol,
+                      });
+                    },
+                    child: Icon(
+                      Icons.star,
+                      color: AppColors.textPrimary,
+                      size: 24,
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   // Icon(
                   //   Icons.notifications_outlined,
@@ -184,7 +195,7 @@ class HeaderSection extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: AppColors.textSecondary.withOpacity(0.3),
+                      color: AppColors.textSecondary.withValues(alpha: 0.3),
                       width: 1,
                     ),
                     borderRadius: BorderRadius.circular(8),
@@ -282,7 +293,7 @@ class HeaderSection extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: AppColors.textSecondary.withOpacity(0.3),
+                      color: AppColors.textSecondary.withValues(alpha: 0.3),
                       width: 1,
                     ),
                     borderRadius: BorderRadius.circular(8),

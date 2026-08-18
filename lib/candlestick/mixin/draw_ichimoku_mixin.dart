@@ -763,41 +763,28 @@ mixin DrawIchimokuMixin {
     // ============================================================
 
     const double paddingX = 4.0;
-
     const double paddingY = 2.0;
 
     final double boxWidth = textPainter.width + paddingX * 2;
-
     final double boxHeight = textPainter.height + paddingY * 2;
 
     // ============================================================
     // Y BÁM THEO ĐƯỜNG
     //
-    // Khi value thay đổi do scroll:
-    // Y sẽ thay đổi theo.
+    // Value vẫn lấy theo point ngoài cùng đang hiển thị.
+    // Khi scroll -> value thay đổi -> Y thay đổi theo.
     // ============================================================
 
     final double y = priceToY(point.value, chartHeight);
 
     // ============================================================
-    // X BÁM THEO POINT CUỐI
+    // X CỐ ĐỊNH Ở MÉP PHẢI
     //
-    // Label nằm ngay bên phải point ngoài cùng.
-    //
-    // Ichimoku dừng trước 50px nên label có thể nằm trong
-    // vùng 50px đó.
+    // Chỉ thay đổi phần này so với code cũ.
+    // Không dùng point.x + 4 nữa.
     // ============================================================
 
-    double dx = point.x + 4.0;
-
-    // Không cho box vượt màn hình.
-    if (dx + boxWidth > size.width - 2) {
-      dx = size.width - boxWidth - 2;
-    }
-
-    if (dx < 2) {
-      dx = 2;
-    }
+    final double dx = size.width - boxWidth + 45;
 
     // ============================================================
     // VERTICAL POSITION
