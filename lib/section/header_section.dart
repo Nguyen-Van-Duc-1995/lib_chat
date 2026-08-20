@@ -142,17 +142,45 @@ class HeaderSection extends StatelessWidget {
               ),
               Row(
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      viewModel.handleSearchPressed({
-                        'selectStart': ticker.symbol,
-                      });
+                  ListenableBuilder(
+                    listenable: viewModel,
+                    builder: (context, child) {
+                      return GestureDetector(
+                        onTap: viewModel.toggleFavorite,
+                        child: AnimatedScale(
+                          scale: viewModel.isFavorite ? 1.15 : 1.0,
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOutBack,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: viewModel.isFavorite
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.amber.withValues(
+                                          alpha: 0.35,
+                                        ),
+                                        blurRadius: 10,
+                                        spreadRadius: 1,
+                                      ),
+                                    ]
+                                  : [],
+                            ),
+                            child: Icon(
+                              viewModel.isFavorite
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              color: viewModel.isFavorite
+                                  ? Colors.amber
+                                  : AppColors.textPrimary,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      );
                     },
-                    child: Icon(
-                      Icons.star,
-                      color: AppColors.textPrimary,
-                      size: 24,
-                    ),
                   ),
                   const SizedBox(width: 12),
                   // Icon(

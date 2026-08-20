@@ -113,15 +113,6 @@ class HomePage extends StatelessWidget {
             debugPrint("========== SEARCH CALLBACK TRIGGERED ==========");
             debugPrint("Data received: $data");
 
-            // Hiển thị SnackBar để test
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Search pressed! Data: $data'),
-                backgroundColor: AppColors.priceUp,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-
             // Hoặc navigate đến trang search
             /*
             Navigator.push(

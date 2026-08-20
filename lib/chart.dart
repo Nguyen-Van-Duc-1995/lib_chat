@@ -17,6 +17,7 @@ class ChartApp extends StatelessWidget {
       create: (_) {
         return TradingViewModel(
           symbol: stockdata['item']['Symbol'],
+          isFavorite: stockdata['isFavorite'] == true,
           klineStream: stockdata['klineStream'],
           stockdata: stockdata['item'],
           exchange: stockdata['exchange'],
