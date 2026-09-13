@@ -117,11 +117,12 @@ class _TradingScreenState extends State<TradingScreen>
             tabs: const [
               Tab(text: 'Lệnh khớp'),
               Tab(text: 'Gộp khớp'),
+              Tab(text: 'Lệnh lớn'),
               Tab(text: 'Thông tin'),
             ],
           ),
           SizedBox(height: 8),
-          if (_tabController.index != 2 && viewModel.latestTrade != null)
+          if (_tabController.index != 3 && viewModel.latestTrade != null)
             BuySellBar(
               buy: viewModel.latestTrade!,
               sell: viewModel.latestTrade!,
@@ -131,8 +132,20 @@ class _TradingScreenState extends State<TradingScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                TradeHistorySection(viewModel: viewModel),
-                TradeHistorySection(viewModel: viewModel, isGrouped: true),
+                TradeHistorySection(viewModel: viewModel, tabIndex: 0),
+
+                TradeHistorySection(
+                  viewModel: viewModel,
+                  tabIndex: 1,
+                  isGrouped: true,
+                ),
+
+                TradeHistorySection(
+                  viewModel: viewModel,
+                  tabIndex: 2,
+                  isLargeOrder: true,
+                ),
+
                 MarketInfoSection(viewModel: viewModel),
               ],
             ),

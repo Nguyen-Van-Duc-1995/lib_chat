@@ -230,6 +230,7 @@ class TradingViewModel extends ChangeNotifier {
   int get selectedTab => _selectedTab;
 
   bool isGrouped = false;
+  bool isLargeOrder = false;
 
   // ============================================================
   // CALLBACK
@@ -248,12 +249,11 @@ class TradingViewModel extends ChangeNotifier {
   // ============================================================
   // TRADES
   // ============================================================
-
   Future<void> resetTrades() async {
     _trades.clear();
     notifyListeners();
 
-    _orderList();
+    await _orderList();
   }
 
   // ============================================================
@@ -283,6 +283,7 @@ class TradingViewModel extends ChangeNotifier {
       final List<dynamic> orders = await OrderService.listOrdersServices(
         symbol,
         isGrouped: isGrouped,
+        isLargeOrder: isLargeOrder,
       );
 
       _trades.addAll(orders.map((data) => TradeEntry.fromJson(data)).toList());
@@ -301,10 +302,11 @@ class TradingViewModel extends ChangeNotifier {
     try {
       final lastId = _trades.last.id;
 
-      List<dynamic> orders = await OrderService.listOrdersServices(
+      final List<dynamic> orders = await OrderService.listOrdersServices(
         symbol,
         lastId: lastId,
         isGrouped: isGrouped,
+        isLargeOrder: isLargeOrder,
       );
 
       final newTrades = orders
@@ -312,6 +314,8 @@ class TradingViewModel extends ChangeNotifier {
           .toList();
 
       _trades.addAll(newTrades);
+
+      notifyListeners();
     } catch (e) {
       print('Lỗi khi lấy danh sách lệnh: $e');
     }

@@ -8,12 +8,17 @@ import 'package:intl/intl.dart';
 
 class TradeHistorySection extends HookWidget {
   final TradingViewModel viewModel;
+
+  final int tabIndex;
   final bool isGrouped;
+  final bool isLargeOrder;
 
   const TradeHistorySection({
     super.key,
     required this.viewModel,
+    required this.tabIndex,
     this.isGrouped = false,
+    this.isLargeOrder = false,
   });
 
   @override
@@ -31,12 +36,17 @@ class TradeHistorySection extends HookWidget {
     final isLoadingMore = useState(false);
 
     useEffect(() {
+      if (viewModel.selectedTab != tabIndex) {
+        return null;
+      }
+
       bool disposed = false;
 
       Future<void> init() async {
         isInitialLoading.value = true;
 
         viewModel.isGrouped = isGrouped;
+        viewModel.isLargeOrder = isLargeOrder;
 
         try {
           await viewModel.resetTrades();
@@ -52,7 +62,7 @@ class TradeHistorySection extends HookWidget {
       return () {
         disposed = true;
       };
-    }, [viewModel, isGrouped]);
+    }, [viewModel, viewModel.selectedTab, tabIndex, isGrouped, isLargeOrder]);
 
     useEffect(() {
       Future<void> handleLoadMore() async {
