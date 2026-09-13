@@ -249,8 +249,10 @@ class TradingViewModel extends ChangeNotifier {
   // TRADES
   // ============================================================
 
-  void resetTrades() {
+  Future<void> resetTrades() async {
     _trades.clear();
+    notifyListeners();
+
     _orderList();
   }
 
@@ -276,9 +278,9 @@ class TradingViewModel extends ChangeNotifier {
   // ORDER LIST
   // ============================================================
 
-  void _orderList() async {
+  Future<void> _orderList() async {
     try {
-      List<dynamic> orders = await OrderService.listOrdersServices(
+      final List<dynamic> orders = await OrderService.listOrdersServices(
         symbol,
         isGrouped: isGrouped,
       );
